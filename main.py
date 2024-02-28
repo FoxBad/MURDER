@@ -7,17 +7,13 @@ pygame.init()
 fps = 60
 fpsClock = pygame.time.Clock()
 
-
 info = pygame.display.Info()
 w = 1000
 h = 800
 
-
 screen = pygame.display.set_mode((w, h))
 
-pygame.display.set_caption("Murder")
-
-knife = pygame.image.load(os.path.join("assets", "knife.png"))
+ws, hs = screen.get_size()
 
 
 class Player():
@@ -53,6 +49,67 @@ class Player():
         
         screen.blit(knifeS, knifeS_rect)
   
+class Bullet:
+    def __init__(self, tireur):
+        self.tireur = tireur
+        self.x = tireur.x
+        self.y = tireur.y
+        self.destx, self.desty = pygame.mouse.get_pos()
+        self.rad = 5
+        self.speed = 5  
+
+        vect = (self.destx - self.x, self.desty - self.y)
+        angle = math.atan2(vect[1], vect[0])
+        self.change_x = math.cos(angle) * self.speed
+        self.change_y = math.sin(angle) * self.speed;
+
+
+    def draw(self):
+
+        pygame.draw.circle(screen, WHITE, [self.x, self.y], self.rad, 0)
+
+
+    def move(self):
+
+        self.x += self.change_x
+        self.y += self.change_y
+
+                
+        if self.x < 0 or self.x > info.current_w or self.y < 0 or self.y > info.current_h:
+            bullets.remove(self)
+
+
+BLACK = (0, 0, 0)
+GRAY = (127, 127, 127)
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
+YELLOW = (255, 255, 0)
+CYAN = (0, 255, 255)
+MAGENTA = (255, 0, 255)
+
+
+
+pygame.display.set_caption("Murder")
+
+knife = pygame.image.load(os.path.join("assets", "knife.png"))
+
+bullets = []
+
+M1 = Player(100, 100, 100, 100, "Murder1", knife, 5)
+
+
+
+def draw():
+    M1.draw()
+    for bullet in bullets:
+        bullet.draw()
+
+def bulletsmanage():
+    for bullet in bullets:
+        bullet.move()
+
 
 def keyPressed(inputKey):
     keysPressed = pygame.key.get_pressed()
@@ -61,10 +118,6 @@ def keyPressed(inputKey):
     else:
         return False
 
-M1 = Player(100, 100, 100, 100, "Murder1", knife, 5)
-
-def draw():
-    M1.draw()
 
 # Game loop.
 while True:
@@ -81,11 +134,15 @@ while True:
                     pygame.display.set_mode((w, h))
                 else:
                     pygame.display.set_mode((1920, 1080), FULLSCREEN)
+            if e.key == pygame.K_SPACE:
+                new_bul = Bullet(M1)
+                bullets.append(new_bul)
 
   # Update.
   
   # Draw.
     draw()
+    bulletsmanage()
   
     pygame.display.flip()
     fpsClock.tick(fps)
