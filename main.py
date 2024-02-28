@@ -73,7 +73,6 @@ class Bullet:
 
         self.x += self.change_x
         self.y += self.change_y
-
                 
         if self.x < 0 or self.x > info.current_w or self.y < 0 or self.y > info.current_h:
             bullets.remove(self)
