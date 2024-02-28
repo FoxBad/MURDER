@@ -1,4 +1,4 @@
-import sys, os
+import sys, os, math
 import pygame
 from pygame.locals import *
  
@@ -9,15 +9,15 @@ fpsClock = pygame.time.Clock()
 
 
 info = pygame.display.Info()
-w = 600
-h = 400
+w = 1000
+h = 800
 
 
 screen = pygame.display.set_mode((w, h))
 
 pygame.display.set_caption("Murder")
 
-murderU = pygame.image.load(os.path.join("assets", ""))
+knife = pygame.image.load(os.path.join("assets", "knife.png"))
 
 
 class Player():
@@ -33,15 +33,25 @@ class Player():
     def draw(self):
         self.img = pygame.transform.scale(self.img, (self.sx, self.sy))
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_q]:
             self.x -= self.speed
-        if keys[pygame.K_RIGHT]:
+        if keys[pygame.K_d]:
             self.x += self.speed
-        if keys[pygame.K_UP]:
+        if keys[pygame.K_z]:
             self.y -= self.speed
-        if keys[pygame.K_DOWN]:
+        if keys[pygame.K_s]:
             self.y += self.speed
-        screen.blit(self.img, (self.x, self.y))
+
+        pos = pygame.mouse.get_pos()
+
+        x_dist = pos[0] - self.x
+        y_dist = -(pos[1] - self.y)
+        angle = math.degrees(math.atan2(y_dist, x_dist))
+
+        knifeS = pygame.transform.rotate(self.img, angle - 90)
+        knifeS_rect = knifeS.get_rect(center = (self.x, self.y))
+        
+        screen.blit(knifeS, knifeS_rect)
   
 
 def keyPressed(inputKey):
@@ -52,10 +62,13 @@ def keyPressed(inputKey):
         return False
 
 
-M1 = Player(100, 100, 100, 100, "murder1", murderU, 5)
+M1 = Player(100, 100, 100, 100, "Murder1", knife, 5)
+
+
 
 def draw():
     M1.draw()
+    M2.draw()
   
 
 # Game loop.
