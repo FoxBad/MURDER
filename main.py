@@ -61,14 +61,10 @@ def keyPressed(inputKey):
     else:
         return False
 
-
 M1 = Player(100, 100, 100, 100, "Murder1", knife, 5)
-
-
 
 def draw():
     M1.draw()
-  
 
 # Game loop.
 while True:
