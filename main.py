@@ -68,7 +68,6 @@ M1 = Player(100, 100, 100, 100, "Murder1", knife, 5)
 
 def draw():
     M1.draw()
-    M2.draw()
   
 
 # Game loop.
