@@ -9,7 +9,7 @@ fpsClock = pygame.time.Clock()
 
 info = pygame.display.Info()
 w = 1000
-h = 800
+h = 1000
 
 screen = pygame.display.set_mode((w, h))
 
@@ -24,6 +24,7 @@ class Player():
         self.sy = sy
         self.nom = nom
         self.img = img
+        self.vie = 3
         self.speed = speed
 
     def draw(self):
@@ -56,12 +57,12 @@ class Bullet:
         self.y = tireur.y
         self.destx, self.desty = pygame.mouse.get_pos()
         self.rad = 5
-        self.speed = 5  
+        self.speed = 20  
 
         vect = (self.destx - self.x, self.desty - self.y)
         angle = math.atan2(vect[1], vect[0])
         self.change_x = math.cos(angle) * self.speed
-        self.change_y = math.sin(angle) * self.speed;
+        self.change_y = math.sin(angle) * self.speed
 
 
     def draw(self):
