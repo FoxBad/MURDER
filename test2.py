@@ -1,6 +1,7 @@
 
 import sys, os, math
 import pygame
+import socket, threading
 from pygame.locals import *
  
 pygame.init()
@@ -100,8 +101,6 @@ MAGENTA = (255, 0, 255)
 pygame.display.set_caption("Murder")
 
 knife = pygame.image.load(os.path.join("assets", "knife.png"))
-settings = pygame.image.load(os.path.join("assets", "settings.png"))
-settings = pygame.transform.scale(settings, (75, 75))
 
 bullets = []
 
@@ -142,6 +141,7 @@ def main_menu():
         draw_text("Jouer", pygame.font.Font(None, 54), BLACK, screen, ws // 2, button_y + 50)
         draw_text("Quitter", pygame.font.Font(None, 54), BLACK, screen, ws // 2, button_y + 250)
 
+        click = False
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit()
@@ -167,7 +167,6 @@ def main_menu():
 
 def pause_menu():
     while True:
-        screen.fill(WHITE)
         draw_text("Pause", pygame.font.Font(None, 72), BLACK, screen, ws // 2, hs // 4)
 
         mx, my = pygame.mouse.get_pos()
@@ -182,17 +181,13 @@ def pause_menu():
         button_1 = pygame.Rect(button_x, button_y, button_width, button_height)
         button_2 = pygame.Rect(button_x, button_y + 200, button_width, button_height)
 
-
-
         pygame.draw.rect(screen, (0, 255, 0), button_1)
         pygame.draw.rect(screen, (255, 0, 0), button_2)
 
         draw_text("Reprendre", pygame.font.Font(None, 54), BLACK, screen, ws // 2, button_y + 50)
         draw_text("Menu Principal", pygame.font.Font(None, 54), BLACK, screen, ws // 2, button_y + 250)
 
-        set_rect = settings.get_rect(center=(50, 50))
-        screen.blit(settings, set_rect)
-
+        click = False
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit()
@@ -203,8 +198,6 @@ def pause_menu():
                         game()
                     if button_2.collidepoint((mx, my)):
                         main_menu()
-                    if set_rect.collidepoint((mx, my)):
-                        set_menu()
 
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_f:
@@ -216,51 +209,6 @@ def pause_menu():
                     game()
 
 
-
-        pygame.display.update()
-
-
-def set_menu():
-    while True:
-        screen.fill(WHITE)
-        draw_text("Options", pygame.font.Font(None, 72), BLACK, screen, ws // 2, hs // 4)
-
-        mx, my = pygame.mouse.get_pos()
-
-        winsize()
-
-        button_width = 400
-        button_height = 100
-        button_x = ws // 2 - button_width // 2
-        button_y = hs // 2 - button_height // 2
-
-        button_1 = pygame.Rect(button_x, button_y, button_width, button_height)
-        button_2 = pygame.Rect(button_x, button_y + 200, button_width, button_height)
-
-        pygame.draw.rect(screen, (100, 100, 100), button_1)
-        pygame.draw.rect(screen, (255, 0, 0), button_2)
-
-        draw_text("<ADD>", pygame.font.Font(None, 54), BLACK, screen, ws // 2, button_y + 50)
-        draw_text("Retour", pygame.font.Font(None, 54), BLACK, screen, ws // 2, button_y + 250)
-
-        for e in pygame.event.get():
-            if e.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if e.type == pygame.MOUSEBUTTONDOWN:
-                if e.button == 1:
-
-                    if button_2.collidepoint((mx, my)):
-                        pause_menu()
-
-            if e.type == pygame.KEYDOWN:
-                if e.key == pygame.K_f:
-                    if screen.get_flags() & FULLSCREEN:
-                        pygame.display.set_mode((w, h))
-                    else:
-                        pygame.display.set_mode((1920, 1080), FULLSCREEN)
-                if e.key == pygame.K_ESCAPE:
-                    pause_menu()
 
         pygame.display.update()
 

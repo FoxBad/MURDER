@@ -79,6 +79,14 @@ class Bullet:
             bullets.remove(self)
 
 
+def keyPressed(inputKey):
+    keysPressed = pygame.key.get_pressed()
+    if keysPressed[inputKey]:
+        return True
+    else:
+        return False
+
+
 BLACK = (0, 0, 0)
 GRAY = (127, 127, 127)
 WHITE = (255, 255, 255)
@@ -111,17 +119,9 @@ def bulletsmanage():
         bullet.move()
 
 
-def keyPressed(inputKey):
-    keysPressed = pygame.key.get_pressed()
-    if keysPressed[inputKey]:
-        return True
-    else:
-        return False
-
-
 # Game loop.
 while True:
-    screen.fill((0, 0, 0))
+    screen.fill(BLACK)
   
     for e in pygame.event.get():
         if e.type == QUIT:
