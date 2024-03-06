@@ -33,20 +33,24 @@ class Player():
         self.vie = 3
         self.speed = speed
         self.role = self.choisir_role()  # Choix aléatoire du rôle
+        self.murder = False
+        
+        if self.role == 'Innocent':
+            self.img = ino
+        if self.role == 'Tueur':
+            self.img = ino
+        if self.role == 'Détective':
+            self.img = detect
+
 
     def choisir_role(self):
         roles = ['Innocent', 'Tueur', 'Détective']
         poids_roles = [0, 10, 0]
         role = random.choices(roles, weights=poids_roles, k=1)[0]
+        
         return role
 
     def draw(self):
-        if self.role == 'Innocent':
-            self.img = ino
-        if self.role == 'Tueur':
-            self.img = murder
-        if self.role == 'Détective':
-            self.img = detect
         
         self.img = pygame.transform.scale(self.img, (self.sx, self.sy))
         keys = pygame.key.get_pressed()
@@ -68,11 +72,16 @@ class Player():
 
         knifeS = pygame.transform.rotate(self.img, angle)
         knifeS_rect = knifeS.get_rect(center = (self.x, self.y))
-
-        if self.role == 'Tueur': 
-            pygame.draw.ellipse(screen, BLACK, [self.x-self.sx, self.y-self.sy, 200, 200], 5)
         
+
+
         screen.blit(knifeS, knifeS_rect)
+
+        if self.murder == True:
+            pygame.draw.ellipse(screen, BLACK, [M1.x-M1.sx, M1.y-M1.sy, 200, 200], 5)
+
+
+
   
 class Bullet:
     def __init__(self, tireur):
@@ -345,9 +354,21 @@ def game():
                 if e.key == pygame.K_SPACE and M1.role == 'Détective':
                     new_bul = Bullet(M1)
                     bullets.append(new_bul)
+
+
+
+                if e.key == pygame.K_SPACE and M1.role == 'Tueur' and M1.murder == True:
+                    pygame.draw.circle(screen, RED, [M1.x, M1.y], 99, 0)
+                
                 if e.key == pygame.K_ESCAPE:
                     pause_menu()
 
+                if e.key == pygame.K_e and M1.role == 'Tueur':
+                    M1.img = murder
+                    M1.murder = True
+                if e.key == pygame.K_r and M1.role == 'Tueur':
+                    M1.img = ino
+                    M1.murder = False
 
         showall()
     
