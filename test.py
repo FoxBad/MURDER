@@ -1,8 +1,14 @@
 
-import sys, os, math
+#-------------------------------IMPORT-----------------------------
+
+
+import sys, os, math, random
 import pygame
 from pygame.locals import *
  
+
+#-------------------------------INIT-----------------------------
+
 pygame.init()
  
 fps = 60
@@ -15,18 +21,33 @@ h = 800
 screen = pygame.display.set_mode((w, h))
 
 
+#-------------------------------CLASS-----------------------------
+
 class Player():
-    def __init__(self, x, y, sx, sy, nom, img, speed):
+    def __init__(self, x, y, sx, sy, nom, speed):
         self.x = x
         self.y = y
         self.sx = sx
         self.sy = sy
-        self.nom = nom
-        self.img = img
+        self.nom = nom      
         self.vie = 3
         self.speed = speed
+        self.role = self.choisir_role()  # Choix aléatoire du rôle
+
+    def choisir_role(self):
+        roles = ['Innocent', 'Tueur', 'Détective']
+        poids_roles = [0, 10, 0]
+        role = random.choices(roles, weights=poids_roles, k=1)[0]
+        return role
 
     def draw(self):
+        if self.role == 'Innocent':
+            self.img = ino
+        if self.role == 'Tueur':
+            self.img = murder
+        if self.role == 'Détective':
+            self.img = detect
+        
         self.img = pygame.transform.scale(self.img, (self.sx, self.sy))
         keys = pygame.key.get_pressed()
         if keys[pygame.K_q]:
@@ -34,7 +55,7 @@ class Player():
         if keys[pygame.K_d]:
             self.x += self.speed
         if keys[pygame.K_z]:
-            self.y -= self.speed
+            self.y -= self.speed 
         if keys[pygame.K_s]:
             self.y += self.speed
 
@@ -44,8 +65,12 @@ class Player():
         y_dist = -(pos[1] - self.y)
         angle = math.degrees(math.atan2(y_dist, x_dist))
 
-        knifeS = pygame.transform.rotate(self.img, angle - 90)
+
+        knifeS = pygame.transform.rotate(self.img, angle)
         knifeS_rect = knifeS.get_rect(center = (self.x, self.y))
+
+        if self.role == 'Tueur': 
+            pygame.draw.ellipse(screen, BLACK, [self.x-self.sx, self.y-self.sy, 200, 200], 5)
         
         screen.blit(knifeS, knifeS_rect)
   
@@ -78,13 +103,7 @@ class Bullet:
             bullets.remove(self)
 
 
-def keyPressed(inputKey):
-    keysPressed = pygame.key.get_pressed()
-    if keysPressed[inputKey]:
-        return True
-    else:
-        return False
-
+#-------------------------------VARIABLE-----------------------------
 
 BLACK = (0, 0, 0)
 GRAY = (127, 127, 127)
@@ -99,13 +118,31 @@ MAGENTA = (255, 0, 255)
 
 pygame.display.set_caption("Murder")
 
-knife = pygame.image.load(os.path.join("assets", "knife.png"))
+ino = pygame.image.load(os.path.join("assets", "ino.png"))
+detect = pygame.image.load(os.path.join("assets", "detect.png"))
+murder = pygame.image.load(os.path.join("assets", "murder.png"))
 settings = pygame.image.load(os.path.join("assets", "settings.png"))
 settings = pygame.transform.scale(settings, (75, 75))
 
 bullets = []
 
-M1 = Player(100, 100, 100, 100, "Murder1", knife, 5)
+M1 = Player(100, 100, 100, 100, "Murder1", 5)
+
+
+#-------------------------------OTHER FUNCTION-----------------------------
+
+def draw_text(text, font, color, surface, x, y):
+    text_obj = font.render(text, True, color)
+    text_rect = text_obj.get_rect()
+    text_rect.center = (x, y)
+    surface.blit(text_obj, text_rect)
+
+def keyPressed(inputKey):
+    keysPressed = pygame.key.get_pressed()
+    if keysPressed[inputKey]:
+        return True
+    else:
+        return False
 
 def winsize():
     global ws, hs
@@ -113,11 +150,8 @@ def winsize():
 
 winsize()
 
-def draw_text(text, font, color, surface, x, y):
-    text_obj = font.render(text, True, color)
-    text_rect = text_obj.get_rect()
-    text_rect.center = (x, y)
-    surface.blit(text_obj, text_rect)
+
+#-------------------------------MAIN MENU-----------------------------
 
 def main_menu():
     while True:
@@ -163,6 +197,8 @@ def main_menu():
 
 
         pygame.display.update()
+
+#-------------------------------PAUSE MENU-----------------------------
 
 
 def pause_menu():
@@ -220,6 +256,9 @@ def pause_menu():
         pygame.display.update()
 
 
+#-------------------------------OPTIONS MENU-----------------------------
+
+
 def set_menu():
     while True:
         screen.fill(WHITE)
@@ -264,10 +303,18 @@ def set_menu():
 
         pygame.display.update()
 
+
+
+#-------------------------------JEU-----------------------------
+
+
 def draw():
-    M1.draw()
+    
+    
     for bullet in bullets:
         bullet.draw()
+    M1.draw()
+    draw_text(M1.role, pygame.font.Font(None, 54), BLACK, screen, ws*18 // 20, hs // 20)
 
 def bulletsmanage():
     for bullet in bullets:
@@ -295,10 +342,7 @@ def game():
                         pygame.display.set_mode((w, h))
                     else:
                         pygame.display.set_mode((1920, 1080), FULLSCREEN)
-                        """M1.x = M1.x*1920/w
-                        M1.y = M1.x*1080/h
-                        print(M1.x, M1.y)"""
-                if e.key == pygame.K_SPACE:
+                if e.key == pygame.K_SPACE and M1.role == 'Détective':
                     new_bul = Bullet(M1)
                     bullets.append(new_bul)
                 if e.key == pygame.K_ESCAPE:
@@ -309,6 +353,9 @@ def game():
     
         pygame.display.flip()
         fpsClock.tick(fps)
+
+
+#-------------------------------START-----------------------------
 
 if __name__ == "__main__":
     main_menu()
