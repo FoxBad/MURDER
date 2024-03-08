@@ -56,7 +56,6 @@ class Player():
 
     def draw(self):
         
-
         self.img = pygame.transform.scale(self.img, (self.sx, self.sy))
         keys = pygame.key.get_pressed()
         if keys[self.Kl]:
@@ -67,7 +66,6 @@ class Player():
             self.y -= self.speed 
         if keys[self.Kd]:
             self.y += self.speed
-
 
         pos = pygame.mouse.get_pos()
 
@@ -80,16 +78,7 @@ class Player():
         
         screen.blit(knifeS, knifeS_rect)
 
-        if self.murder == True and self.role == "Murder":
-            pygame.draw.ellipse(screen, BLACK, [self.x-self.sx, self.y-self.sy, 200, 200], 5)
-        
-        for player in players:
-            if player.role == 'Innocent':
-                player.murder == False
-                player.img = ino
-            if player.role == 'Détective':
-                player.murder == False
-                player.img = detect
+
 
     
 
@@ -347,24 +336,37 @@ def set_menu():
 #-------------------------------JEU-----------------------------
 
 
-def draw():
-    for bullet in bullets:
-        bullet.draw()
-
-    for player in players:
-        player.draw()
+def playermanage():
+        
 
     draw_text(M1.role, pygame.font.Font(None, 54), BLACK, screen, ws*18 // 20, hs // 20)
     draw_text(M2.role, pygame.font.Font(None, 54), BLACK, screen, ws*10 // 20, hs // 20)
 
-def bulletsmanage():
-    for bullet in bullets:
-        bullet.move()
 
-def showall():
-    draw()
-    bulletsmanage()
-    winsize()
+    
+    for player in players:
+
+        player.draw()
+
+        if player.murder == True and player.role == "Murder":
+            pygame.draw.ellipse(screen, BLACK, [player.x-player.sx, player.y-player.sy, 200, 200], 5)
+
+        if player.role == 'Innocent':
+            player.murder == False
+            player.img = ino
+        if player.role == 'Détective':
+            player.murder == False
+            player.img = detect
+
+
+
+def bulletsmanage():
+
+    for bullet in bullets:
+        bullet.draw()
+        bullet.move()
+    
+
 
 # Game loop.
 def game():
@@ -408,7 +410,10 @@ def game():
                     
 
 
-        showall()
+
+        playermanage()
+        bulletsmanage()
+        winsize()
     
         pygame.display.flip()
         fpsClock.tick(fps)
