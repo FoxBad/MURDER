@@ -75,16 +75,21 @@ class Player():
         y_dist = -(pos[1] - self.y)
         angle = math.degrees(math.atan2(y_dist, x_dist))
 
-
         knifeS = pygame.transform.rotate(self.img, angle)
         knifeS_rect = knifeS.get_rect(center = (self.x, self.y))
         
-
-
         screen.blit(knifeS, knifeS_rect)
 
         if self.murder == True and self.role == "Murder":
-            pygame.draw.ellipse(screen, BLACK, [M1.x-M1.sx, M1.y-M1.sy, 200, 200], 5)
+            pygame.draw.ellipse(screen, BLACK, [self.x-self.sx, self.y-self.sy, 200, 200], 5)
+        
+        for player in players:
+            if player.role == 'Innocent':
+                player.murder == False
+                player.img = ino
+            if player.role == 'Détective':
+                player.murder == False
+                player.img = detect
 
     
 
@@ -313,14 +318,17 @@ def set_menu():
                 sys.exit()
             if e.type == pygame.MOUSEBUTTONDOWN:
                 if e.button == 1:
-                    if button_1.collidepoint((mx, my)):
-                        M1.role = "Murder"
-                    if button_2.collidepoint((mx, my)):
-                        M1.role = 'Innocent'
-                    if button_3.collidepoint((mx, my)):
-                        M1.role = "Détective"
-                    if button_4.collidepoint((mx, my)):
-                        pause_menu()
+
+                    for player in players:
+
+                        if button_1.collidepoint((mx, my)):
+                            player.role = "Murder"
+                        if button_2.collidepoint((mx, my)):
+                            player.role = 'Innocent'
+                        if button_3.collidepoint((mx, my)):
+                            player.role = "Détective"
+                        if button_4.collidepoint((mx, my)):
+                            pause_menu()
                     
 
             if e.type == pygame.KEYDOWN:
@@ -343,7 +351,7 @@ def draw():
     for bullet in bullets:
         bullet.draw()
 
-    for player in player:
+    for player in players:
         player.draw()
 
     draw_text(M1.role, pygame.font.Font(None, 54), BLACK, screen, ws*18 // 20, hs // 20)
@@ -375,36 +383,29 @@ def game():
                         pygame.display.set_mode((w, h))
                     else:
                         pygame.display.set_mode((1920, 1080), FULLSCREEN)
-                if e.key == pygame.K_SPACE and M1.role == 'Détective':
-                    new_bul = Bullet(M1)
-                    bullets.append(new_bul)
 
-
-                for player in players
-
-                if M1.role == 'Innocent':
-                    M1.murder == False
-                    M1.img = ino
-                if M1.role == 'Détective':
-                    M1.murder == False
-                    M1.img = detect
-
-
-
-
-                if e.key == pygame.K_SPACE and M1.role == "Murder" and M1.murder == True:
-                    pygame.draw.circle(screen, RED, [M1.x, M1.y], 99, 0)
-                
                 if e.key == pygame.K_ESCAPE:
                     pause_menu()
 
-                if e.key == pygame.K_e and M1.role == "Murder":
-                    M1.img = murder
-                    M1.murder = True
-                if e.key == pygame.K_r and M1.role == "Murder":
-                    M1.img = ino
-                    M1.murder = False
-                
+
+
+
+                for player in players:
+                    
+                    if e.key == pygame.K_SPACE and player.role == 'Détective':
+                        new_bul = Bullet(player)
+                        bullets.append(new_bul)
+
+                    if e.key == pygame.K_SPACE and player.role == "Murder" and player.murder == True:
+                        pygame.draw.circle(screen, RED, [player.x, player.y], 99, 0)
+
+                    if e.key == pygame.K_e and player.role == "Murder":
+                        player.img = murder
+                        player.murder = True
+                    if e.key == pygame.K_r and player.role == "Murder":
+                        player.img = ino
+                        player.murder = False
+                    
 
 
         showall()
