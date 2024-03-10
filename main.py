@@ -24,7 +24,7 @@ screen = pygame.display.set_mode((w, h))
 #-------------------------------CLASS-----------------------------
 
 class Player():
-    def __init__(self, x, y, sx, sy, nom, speed):
+    def __init__(self, x, y, sx, sy, nom, speed, Ku, Kd, Kl, Kr):
         self.x = x
         self.y = y
         self.sx = sx
@@ -34,6 +34,12 @@ class Player():
         self.speed = speed
         self.role = self.choisir_role()  # Choix aléatoire du rôle
         self.murder = False
+        self.Ku = Ku
+        self.Kd = Kd
+        self.Kl = Kl
+        self.Kr = Kr
+        self.bulletlist = []
+
         
         if self.role == 'Innocent':
             self.img = ino
@@ -51,16 +57,15 @@ class Player():
 
     def draw(self):
         
-
         self.img = pygame.transform.scale(self.img, (self.sx, self.sy))
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_q]:
+        if keys[self.Kl]:
             self.x -= self.speed
-        if keys[pygame.K_d]:
+        if keys[self.Kr]:
             self.x += self.speed
-        if keys[pygame.K_z]:
+        if keys[self.Ku]:
             self.y -= self.speed 
-        if keys[pygame.K_s]:
+        if keys[self.Kd]:
             self.y += self.speed
 
         pos = pygame.mouse.get_pos()
@@ -69,16 +74,14 @@ class Player():
         y_dist = -(pos[1] - self.y)
         angle = math.degrees(math.atan2(y_dist, x_dist))
 
-
-        knifeS = pygame.transform.rotate(self.img, angle)
-        knifeS_rect = knifeS.get_rect(center = (self.x, self.y))
+        image  = pygame.transform.rotate(self.img, angle)
+        rect  = image.get_rect(center = (self.x, self.y))
+        self.rect = pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
         
+        
+        screen.blit(image, rect)
 
 
-        screen.blit(knifeS, knifeS_rect)
-
-        if self.murder == True and self.role == "Murder":
-            pygame.draw.ellipse(screen, BLACK, [M1.x-M1.sx, M1.y-M1.sy, 200, 200], 5)
 
     
 
@@ -89,8 +92,11 @@ class Bullet:
         self.x = tireur.x
         self.y = tireur.y
         self.destx, self.desty = pygame.mouse.get_pos()
-        self.rad = 5
+        self.radius = 5
+        self.center = [self.x, self.y]
         self.speed = 20  
+        
+
 
         vect = (self.destx - self.x, self.desty - self.y)
         angle = math.atan2(vect[1], vect[0])
@@ -100,7 +106,10 @@ class Bullet:
 
     def draw(self):
 
-        pygame.draw.circle(screen, BLACK, [self.x, self.y], self.rad, 0)
+
+        self.circle = pygame.draw.circle(screen, BLACK, [self.x, self.y], self.radius, 0)
+        self.rect = pygame.Rect(self.x-self.radius/2, self.y-self.radius/2, self.radius, self.radius)
+
 
 
     def move(self):
@@ -108,8 +117,6 @@ class Bullet:
         self.x += self.change_x
         self.y += self.change_y
                 
-        if self.x < 0 or self.x > info.current_w or self.y < 0 or self.y > info.current_h:
-            bullets.remove(self)
 
 
 #-------------------------------VARIABLE-----------------------------
@@ -134,8 +141,13 @@ settings = pygame.image.load(os.path.join("assets", "settings.png"))
 settings = pygame.transform.scale(settings, (75, 75))
 
 bullets = []
+players = []
 
-M1 = Player(100, 100, 100, 100, "Murder1", 5)
+
+M1 = Player(100, 100, 100, 100, "Murder1", 5,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d)
+M2 = Player(200, 300, 100, 100, "Murder2", 5, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT )
+players.append(M1)
+players.append(M2)
 
 
 #-------------------------------OTHER FUNCTION-----------------------------
@@ -303,14 +315,17 @@ def set_menu():
                 sys.exit()
             if e.type == pygame.MOUSEBUTTONDOWN:
                 if e.button == 1:
-                    if button_1.collidepoint((mx, my)):
-                        M1.role = "Murder"
-                    if button_2.collidepoint((mx, my)):
-                        M1.role = 'Innocent'
-                    if button_3.collidepoint((mx, my)):
-                        M1.role = "Détective"
-                    if button_4.collidepoint((mx, my)):
-                        pause_menu()
+
+                    for player in players:
+
+                        if button_1.collidepoint((mx, my)):
+                            player.role = "Murder"
+                        if button_2.collidepoint((mx, my)):
+                            player.role = 'Innocent'
+                        if button_3.collidepoint((mx, my)):
+                            player.role = "Détective"
+                        if button_4.collidepoint((mx, my)):
+                            pause_menu()
                     
 
             if e.type == pygame.KEYDOWN:
@@ -329,20 +344,54 @@ def set_menu():
 #-------------------------------JEU-----------------------------
 
 
-def draw():
-    for bullet in bullets:
-        bullet.draw()
-    M1.draw()
+def playermanage():
+        
+
     draw_text(M1.role, pygame.font.Font(None, 54), BLACK, screen, ws*18 // 20, hs // 20)
+    draw_text(M2.role, pygame.font.Font(None, 54), BLACK, screen, ws*10 // 20, hs // 20)
+
+
+    
+    for player in players:
+
+        player.draw()
+
+        if player.murder == True and player.role == "Murder":
+            pygame.draw.ellipse(screen, BLACK, [player.x-player.sx, player.y-player.sy, 200, 200], 5)
+
+        if player.role == 'Innocent':
+            player.murder == False
+            player.img = ino
+        if player.role == 'Détective':
+            player.murder == False
+            player.img = detect
+
+
+
 
 def bulletsmanage():
-    for bullet in bullets:
-        bullet.move()
+    for player in players:
 
-def showall():
-    draw()
-    bulletsmanage()
-    winsize()
+        for bullet in player.bulletlist:
+            bullet.draw()
+            bullet.move() 
+
+            otherplayer = players.copy()
+            otherplayer.remove(player)
+            
+            for player2 in otherplayer:
+                if bullet.rect.colliderect(player2.rect):
+                    player.bulletlist.remove(bullet)
+
+            if bullet.x < 0 or bullet.x > info.current_w or bullet.y < 0 or bullet.y > info.current_h:
+                player.bulletlist.remove(bullet)
+
+
+
+
+  
+    
+
 
 # Game loop.
 def game():
@@ -361,34 +410,35 @@ def game():
                         pygame.display.set_mode((w, h))
                     else:
                         pygame.display.set_mode((1920, 1080), FULLSCREEN)
-                if e.key == pygame.K_SPACE and M1.role == 'Détective':
-                    new_bul = Bullet(M1)
-                    bullets.append(new_bul)
 
-                
-                if M1.role == 'Innocent':
-                    M1.murder == False
-                    M1.img = ino
-                if M1.role == 'Détective':
-                    M1.murder == False
-                    M1.img = detect
-
-                if e.key == pygame.K_SPACE and M1.role == "Murder" and M1.murder == True:
-                    pygame.draw.circle(screen, RED, [M1.x, M1.y], 99, 0)
-                
                 if e.key == pygame.K_ESCAPE:
                     pause_menu()
 
-                if e.key == pygame.K_e and M1.role == "Murder":
-                    M1.img = murder
-                    M1.murder = True
-                if e.key == pygame.K_r and M1.role == "Murder":
-                    M1.img = ino
-                    M1.murder = False
-                
 
 
-        showall()
+
+                for player in players:
+                    
+                    if e.key == pygame.K_SPACE and player.role == 'Détective':
+                        new_bul = Bullet(player)
+                        player.bulletlist.append(new_bul)
+
+                    if e.key == pygame.K_SPACE and player.role == "Murder" and player.murder == True:
+                        pygame.draw.circle(screen, RED, [player.x, player.y], 99, 0)
+
+                    if e.key == pygame.K_e and player.role == "Murder":
+                        player.img = murder
+                        player.murder = True
+                    if e.key == pygame.K_r and player.role == "Murder":
+                        player.img = ino
+                        player.murder = False
+                    
+
+
+
+        playermanage()
+        bulletsmanage()
+        winsize()
     
         pygame.display.flip()
         fpsClock.tick(fps)

@@ -38,6 +38,7 @@ class Player():
         self.Kd = Kd
         self.Kl = Kl
         self.Kr = Kr
+        self.bulletlist = []
 
         
         if self.role == 'Innocent':
@@ -73,10 +74,12 @@ class Player():
         y_dist = -(pos[1] - self.y)
         angle = math.degrees(math.atan2(y_dist, x_dist))
 
-        knifeS = pygame.transform.rotate(self.img, angle)
-        knifeS_rect = knifeS.get_rect(center = (self.x, self.y))
+        image  = pygame.transform.rotate(self.img, angle)
+        rect  = image.get_rect(center = (self.x, self.y))
+        self.rect = pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
         
-        screen.blit(knifeS, knifeS_rect)
+        
+        screen.blit(image, rect)
 
 
 
@@ -89,8 +92,11 @@ class Bullet:
         self.x = tireur.x
         self.y = tireur.y
         self.destx, self.desty = pygame.mouse.get_pos()
-        self.rad = 5
+        self.radius = 5
+        self.center = [self.x, self.y]
         self.speed = 20  
+        
+
 
         vect = (self.destx - self.x, self.desty - self.y)
         angle = math.atan2(vect[1], vect[0])
@@ -100,7 +106,10 @@ class Bullet:
 
     def draw(self):
 
-        pygame.draw.circle(screen, BLACK, [self.x, self.y], self.rad, 0)
+
+        self.circle = pygame.draw.circle(screen, BLACK, [self.x, self.y], self.radius, 0)
+        self.rect = pygame.Rect(self.x-self.radius/2, self.y-self.radius/2, self.radius, self.radius)
+
 
 
     def move(self):
@@ -108,8 +117,6 @@ class Bullet:
         self.x += self.change_x
         self.y += self.change_y
                 
-        if self.x < 0 or self.x > info.current_w or self.y < 0 or self.y > info.current_h:
-            bullets.remove(self)
 
 
 #-------------------------------VARIABLE-----------------------------
@@ -141,6 +148,7 @@ M1 = Player(100, 100, 100, 100, "Murder1", 5,pygame.K_z,pygame.K_s,pygame.K_q,py
 M2 = Player(200, 300, 100, 100, "Murder2", 5, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT )
 players.append(M1)
 players.append(M2)
+
 
 #-------------------------------OTHER FUNCTION-----------------------------
 
@@ -360,11 +368,28 @@ def playermanage():
 
 
 
-def bulletsmanage():
 
-    for bullet in bullets:
-        bullet.draw()
-        bullet.move()
+def bulletsmanage():
+    for player in players:
+
+        for bullet in player.bulletlist:
+            bullet.draw()
+            bullet.move() 
+
+            otherplayer = players.copy()
+            otherplayer.remove(player)
+            
+            for player2 in otherplayer:
+                if bullet.rect.colliderect(player2.rect):
+                    player.bulletlist.remove(bullet)
+
+            if bullet.x < 0 or bullet.x > info.current_w or bullet.y < 0 or bullet.y > info.current_h:
+                player.bulletlist.remove(bullet)
+
+
+
+
+  
     
 
 
@@ -396,7 +421,7 @@ def game():
                     
                     if e.key == pygame.K_SPACE and player.role == 'Détective':
                         new_bul = Bullet(player)
-                        bullets.append(new_bul)
+                        player.bulletlist.append(new_bul)
 
                     if e.key == pygame.K_SPACE and player.role == "Murder" and player.murder == True:
                         pygame.draw.circle(screen, RED, [player.x, player.y], 99, 0)
