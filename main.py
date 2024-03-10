@@ -147,9 +147,7 @@ murder = pygame.image.load(os.path.join("assets", "murder.png"))
 settings = pygame.image.load(os.path.join("assets", "settings.png"))
 settings = pygame.transform.scale(settings, (75, 75))
 
-bullets = []
 players = []
-
 
 M1 = Player(100, 100, 100, 100, "Murder1", 5,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d)
 M2 = Player(200, 300, 100, 100, "Murder2", 5, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT )
@@ -350,30 +348,32 @@ def set_menu():
 
 #-------------------------------JEU-----------------------------
 
+def checkalive():
+    for player in players:
+        if player.etat == False:
+            players.remove(player)
+
 
 def playermanage():
-    
 
     draw_text(M1.role, pygame.font.Font(None, 54), BLACK, screen, ws*18 // 20, hs // 20)
     draw_text(M2.role, pygame.font.Font(None, 54), BLACK, screen, ws*10 // 20, hs // 20)
 
     for player in players:
-        if player.etat == True:
-            player.draw()
 
-            if player.murder == True and player.role == "Murder":
-                pygame.draw.ellipse(screen, BLACK, [player.x-player.sx, player.y-player.sy, 200, 200], 5)
-                #circle = pygame.draw.circle(screen, GREEN, [player.x, player.y], 99, 0)
-                
+        player.draw()
 
-            if player.role == 'Innocent':
-                player.murder == False
-                player.img = ino
-            if player.role == 'Détective':
-                player.murder == False
-                player.img = detect
-        else:
-            players.remove(player)
+        if player.murder == True and player.role == "Murder":
+            pygame.draw.ellipse(screen, BLACK, [player.x-player.sx, player.y-player.sy, 200, 200], 5)
+            #circle = pygame.draw.circle(screen, GREEN, [player.x, player.y], 99, 0)
+            
+
+        if player.role == 'Innocent':
+            player.murder == False
+            player.img = ino
+        if player.role == 'Détective':
+            player.murder == False
+            player.img = detect
 
 
 def checkcollision(p1, c1):
@@ -392,21 +392,20 @@ def checkcollision(p1, c1):
 
 def bulletsmanage():
     for player in players:
-        if player.etat == True:
-            for bullet in player.bulletlist:
-                bullet.draw()
-                bullet.move() 
+        for bullet in player.bulletlist:
+            bullet.draw()
+            bullet.move() 
 
-                otherplayer = players.copy()
-                otherplayer.remove(player)
-                
-                for player2 in otherplayer:
-                    if bullet.rect.colliderect(player2.rect):
-                        player.bulletlist.remove(bullet)
-                        player2.perdre_vie()
-
-                if bullet.x < 0 or bullet.x > info.current_w or bullet.y < 0 or bullet.y > info.current_h:
+            otherplayer = players.copy()
+            otherplayer.remove(player)
+            
+            for player2 in otherplayer:
+                if bullet.rect.colliderect(player2.rect):
                     player.bulletlist.remove(bullet)
+                    player2.perdre_vie()
+
+            if bullet.x < 0 or bullet.x > info.current_w or bullet.y < 0 or bullet.y > info.current_h:
+                player.bulletlist.remove(bullet)
 
 
 
@@ -430,25 +429,22 @@ def event():
 
 
             for player in players:
-                if player.etat == True:                
-                    if e.key == pygame.K_SPACE and player.role == 'Détective':
-                        new_bul = Bullet(player)
-                        player.bulletlist.append(new_bul)
+                if e.key == pygame.K_SPACE and player.role == 'Détective':
+                    new_bul = Bullet(player)
+                    player.bulletlist.append(new_bul)
 
-                    if e.key == pygame.K_SPACE and player.role == "Murder" and player.murder == True:
-                        circle = pygame.draw.circle(screen, RED, [player.x, player.y], 100, 0)
-                        checkcollision(player, circle)
+                if e.key == pygame.K_SPACE and player.role == "Murder" and player.murder == True:
+                    circle = pygame.draw.circle(screen, RED, [player.x, player.y], 100, 0)
+                    checkcollision(player, circle)
 
 
-                    if e.key == pygame.K_e and player.role == "Murder":
-                        player.img = murder
-                        player.murder = True
-                    if e.key == pygame.K_r and player.role == "Murder":
-                        player.img = ino
-                        player.murder = False
-            
-
-    
+                if e.key == pygame.K_e and player.role == "Murder":
+                    player.img = murder
+                    player.murder = True
+                    
+                if e.key == pygame.K_r and player.role == "Murder":
+                    player.img = ino
+                    player.murder = False
 
 
 # Game loop.
@@ -457,7 +453,9 @@ def game():
     while running:
         screen.fill(WHITE)
 
+        
         event()
+        checkalive()
         playermanage()
         bulletsmanage()
         winsize()
