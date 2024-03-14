@@ -5,7 +5,7 @@
 import sys, os, math, random
 import pygame
 from pygame.locals import *
- 
+
 
 #-------------------------------INIT-----------------------------
 
@@ -20,6 +20,12 @@ h = 800
 
 screen = pygame.display.set_mode((w, h))
 
+def winsize():
+    global ws, hs
+    ws, hs = screen.get_size()
+
+winsize()
+
 
 #-------------------------------CLASS-----------------------------
 
@@ -30,18 +36,19 @@ class Player():
         self.sx = sx
         self.sy = sy
         self.nom = nom      
-        self.vie = 3
+        self.vie = 1
         self.etat = True
         self.speed = speed
         self.role = self.choisir_role()  # Choix aléatoire du rôle
-        self.murder = False
+        self.murderstat = False
         self.Ku = Ku
         self.Kd = Kd
         self.Kl = Kl
         self.Kr = Kr
         self.bulletlist = []
+        self.bullet = 3
+        self.destx, self.desty = pygame.mouse.get_pos()
         
-
         
         if self.role == 'Innocent':
             self.img = ino
@@ -57,7 +64,7 @@ class Player():
         role = random.choices(roles, weights=poids_roles, k=1)[0]
         return role
 
-    def draw(self):
+    def update(self):
         
         self.img = pygame.transform.scale(self.img, (self.sx, self.sy))
         keys = pygame.key.get_pressed()
@@ -69,6 +76,8 @@ class Player():
             self.y -= self.speed 
         if keys[self.Kd]:
             self.y += self.speed
+        
+    def orientation(self):
 
         pos = pygame.mouse.get_pos()
 
@@ -79,10 +88,31 @@ class Player():
         image  = pygame.transform.rotate(self.img, angle)
         rect  = image.get_rect(center = (self.x, self.y))
         self.rect = pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
-        
-        
-        screen.blit(image, rect)
 
+        screen.blit(image, rect)
+    
+    def murder(self):
+        pos = pygame.mouse.get_pos()
+
+        vect = (pos[0] - self.x, pos[1] - self.y)
+        anglemur = math.atan2(vect[1], vect[0])
+        self.change_x = math.cos(anglemur)
+        self.change_y = math.sin(anglemur)
+
+        if self.murderstat == True and self.role == "Murder":
+            pygame.draw.rect(screen, BLACK, pygame.Rect(self.change_x, self.change_x, 20, 5))
+            #circle = pygame.draw.circle(screen, GREEN, [player.x, player.y], 99, 0)
+            
+
+    def innocent(self):
+        if self.role == 'Innocent':
+            self.murder == False
+            self.img = ino
+
+    def detective(self):
+        if self.role == 'Détective':
+            self.murder == False
+            self.img = detect
 
     def perdre_vie(self):
         self.vie -= 1
@@ -103,8 +133,6 @@ class Bullet:
         self.center = [self.x, self.y]
         self.speed = 20  
         
-
-
         vect = (self.destx - self.x, self.desty - self.y)
         angle = math.atan2(vect[1], vect[0])
         self.change_x = math.cos(angle) * self.speed
@@ -113,10 +141,8 @@ class Bullet:
 
     def draw(self):
 
-
         self.circle = pygame.draw.circle(screen, BLACK, [self.x, self.y], self.radius, 0)
         self.rect = pygame.Rect(self.x-self.radius/2, self.y-self.radius/2, self.radius, self.radius)
-
 
 
     def move(self):
@@ -149,8 +175,8 @@ settings = pygame.transform.scale(settings, (75, 75))
 
 players = []
 
-M1 = Player(100, 100, 100, 100, "Murder1", 5,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d)
-M2 = Player(200, 300, 100, 100, "Murder2", 5, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT )
+M1 = Player(ws*5 // 20, hs*4 // 20, 100, 100, "Murder1", 5,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d)
+M2 = Player(ws*15 // 20, hs*4 // 20, 100, 100, "Murder2", 5, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT )
 players.append(M1)
 players.append(M2)
 
@@ -170,11 +196,7 @@ def keyPressed(inputKey):
     else:
         return False
 
-def winsize():
-    global ws, hs
-    ws, hs = screen.get_size()
 
-winsize()
 
 
 #-------------------------------MAIN MENU-----------------------------
@@ -230,7 +252,7 @@ def main_menu():
 def pause_menu():
     while True:
         screen.fill(WHITE)
-        draw_text("Pause", pygame.font.Font(None, 72), BLACK, screen, ws // 2, hs // 4)
+        draw_text("Pause", pygame.font.Font(None, 130), BLACK, screen, ws // 2, hs // 4)
 
         mx, my = pygame.mouse.get_pos()
 
@@ -299,20 +321,20 @@ def set_menu():
         button_x = ws // 2 - button_width // 2
         button_y = hs // 2 - button_height // 2
 
-        button_1 = pygame.Rect(button_x, button_y -150, button_width, button_height)
-        button_2 = pygame.Rect(button_x , button_y, button_width, button_height)
-        button_3 = pygame.Rect(button_x, button_y + 150, button_width, button_height)
-        button_4 = pygame.Rect(button_x, button_y + 300, button_width, button_height)
+        button_1 = pygame.Rect(button_x -200, button_y -150, button_width, button_height)
+        button_2 = pygame.Rect(button_x -200, button_y, button_width, button_height)
+        button_3 = pygame.Rect(button_x -200, button_y + 150, button_width, button_height)
+        button_4 = pygame.Rect(button_x -200, button_y + 300, button_width, button_height)
 
         pygame.draw.rect(screen, (100, 100, 100), button_1)
         pygame.draw.rect(screen, (100, 100, 100), button_2)
         pygame.draw.rect(screen, (100, 100, 100), button_3)
         pygame.draw.rect(screen, (255, 0, 0), button_4)
 
-        draw_text("Murder", pygame.font.Font(None, 54), BLACK, screen, button_x+200, button_y - 100)
-        draw_text("Innocent", pygame.font.Font(None, 54), BLACK, screen, button_x+200, button_y+50)
-        draw_text("Détective", pygame.font.Font(None, 54), BLACK, screen, button_x+200, button_y + 200)
-        draw_text("Retour", pygame.font.Font(None, 54), BLACK, screen, button_x+200, button_y + 350)
+        draw_text("Murder", pygame.font.Font(None, 54), BLACK, screen, button_x-100, button_y - 100)
+        draw_text("Innocent", pygame.font.Font(None, 54), BLACK, screen, button_x-150, button_y+50)
+        draw_text("Détective", pygame.font.Font(None, 54), BLACK, screen, button_x-150, button_y + 200)
+        draw_text("Retour", pygame.font.Font(None, 54), BLACK, screen, button_x-150, button_y + 350)
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
@@ -355,26 +377,20 @@ def checkalive():
 
 
 def playermanage():
-
-    draw_text(M1.role, pygame.font.Font(None, 54), BLACK, screen, ws*18 // 20, hs // 20)
-    draw_text(M2.role, pygame.font.Font(None, 54), BLACK, screen, ws*10 // 20, hs // 20)
+    
+    draw_text(M1.role, pygame.font.Font(None, 54), BLACK, screen, ws*5 // 20, hs // 20)
+    draw_text(str(M1.bullet) + " •", pygame.font.Font(None, 54), BLACK, screen, ws*5 // 20, hs*2 // 20)
+    draw_text(M2.role, pygame.font.Font(None, 54), BLACK, screen, ws*15 // 20, hs // 20)
+    draw_text(str(M2.bullet) + " •", pygame.font.Font(None, 54), BLACK, screen, ws*15 // 20, hs*2 // 20)
 
     for player in players:
 
-        player.draw()
-
-        if player.murder == True and player.role == "Murder":
-            pygame.draw.ellipse(screen, BLACK, [player.x-player.sx, player.y-player.sy, 200, 200], 5)
-            #circle = pygame.draw.circle(screen, GREEN, [player.x, player.y], 99, 0)
+        player.update()
+        player.orientation()
+        player.murder()
+        player.innocent()
+        player.detective()
             
-
-        if player.role == 'Innocent':
-            player.murder == False
-            player.img = ino
-        if player.role == 'Détective':
-            player.murder == False
-            player.img = detect
-
 
 def checkcollision(p1, c1):
 
@@ -429,22 +445,23 @@ def event():
 
 
             for player in players:
-                if e.key == pygame.K_SPACE and player.role == 'Détective':
+                if e.key == pygame.K_SPACE and player.role == 'Détective' and player.bullet > 0:
                     new_bul = Bullet(player)
+                    player.bullet -= 1
                     player.bulletlist.append(new_bul)
 
-                if e.key == pygame.K_SPACE and player.role == "Murder" and player.murder == True:
+                if e.key == pygame.K_SPACE and player.role == "Murder" and player.murderstat == True:
                     circle = pygame.draw.circle(screen, RED, [player.x, player.y], 100, 0)
                     checkcollision(player, circle)
 
 
                 if e.key == pygame.K_e and player.role == "Murder":
                     player.img = murder
-                    player.murder = True
+                    player.murderstat = True
                     
                 if e.key == pygame.K_r and player.role == "Murder":
                     player.img = ino
-                    player.murder = False
+                    player.murderstat = False
 
 
 # Game loop.
