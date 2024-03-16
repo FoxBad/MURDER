@@ -48,6 +48,7 @@ class Player():
         self.bulletlist = []
         self.bullet = 3
         self.destx, self.desty = pygame.mouse.get_pos()
+        self.sector = sector
         
         
         if self.role == 'Innocent':
@@ -83,25 +84,40 @@ class Player():
 
         x_dist = pos[0] - self.x
         y_dist = -(pos[1] - self.y)
+        
         angle = math.degrees(math.atan2(y_dist, x_dist))
-
+    
         image  = pygame.transform.rotate(self.img, angle)
         rect  = image.get_rect(center = (self.x, self.y))
         self.rect = pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
 
+
+
+        '''
+        bras = (self.x + 100 * math.sin(angle), self.y + 100 * math.cos(angle))
+        pygame.draw.rect(screen, BLACK, pygame.Rect(bras[0], bras[1], 20, 20))
+        '''
+
         screen.blit(image, rect)
     
     def murder(self):
-        pos = pygame.mouse.get_pos()
 
-        vect = (pos[0] - self.x, pos[1] - self.y)
-        anglemur = math.atan2(vect[1], vect[0])
-        self.change_x = math.cos(anglemur)
-        self.change_y = math.sin(anglemur)
+
+
 
         if self.murderstat == True and self.role == "Murder":
-            pygame.draw.rect(screen, BLACK, pygame.Rect(self.change_x, self.change_x, 20, 5))
-            #circle = pygame.draw.circle(screen, GREEN, [player.x, player.y], 99, 0)
+            
+            pos = pygame.mouse.get_pos()
+
+            x_dist = pos[0] - self.x
+            y_dist = -(pos[1] - self.y)
+        
+            angle = math.degrees(math.atan2(y_dist, x_dist))
+    
+            image  = pygame.transform.rotate(self.sector, angle)
+            rect = image.get_rect(center=(self.x - math.sin(math.radians(angle)), self.y - math.cos(math.radians(angle))))
+
+            screen.blit(image, rect)
             
 
     def innocent(self):
@@ -171,6 +187,9 @@ ino = pygame.image.load(os.path.join("assets", "ino.png"))
 detect = pygame.image.load(os.path.join("assets", "detect.png"))
 murder = pygame.image.load(os.path.join("assets", "murder.png"))
 settings = pygame.image.load(os.path.join("assets", "settings.png"))
+sector = pygame.image.load(os.path.join("assets", "sector.png"))
+sector = pygame.transform.scale(sector, (100, 100))
+sector  = pygame.transform.rotate(sector, 300)
 settings = pygame.transform.scale(settings, (75, 75))
 
 players = []
@@ -321,20 +340,30 @@ def set_menu():
         button_x = ws // 2 - button_width // 2
         button_y = hs // 2 - button_height // 2
 
-        button_1 = pygame.Rect(button_x -200, button_y -150, button_width, button_height)
-        button_2 = pygame.Rect(button_x -200, button_y, button_width, button_height)
-        button_3 = pygame.Rect(button_x -200, button_y + 150, button_width, button_height)
-        button_4 = pygame.Rect(button_x -200, button_y + 300, button_width, button_height)
+        button_1 = pygame.Rect(button_x -250, button_y -150, button_width, button_height)
+        button_2 = pygame.Rect(button_x -250, button_y, button_width, button_height)
+        button_3 = pygame.Rect(button_x -250, button_y + 150, button_width, button_height)
+        button_4 = pygame.Rect(button_x +250, button_y -150, button_width, button_height)
+        button_5 = pygame.Rect(button_x +250, button_y, button_width, button_height)
+        button_6 = pygame.Rect(button_x +250, button_y + 150, button_width, button_height)
+        button_7 = pygame.Rect(button_x, button_y + 300, button_width, button_height)
+        
 
         pygame.draw.rect(screen, (100, 100, 100), button_1)
         pygame.draw.rect(screen, (100, 100, 100), button_2)
         pygame.draw.rect(screen, (100, 100, 100), button_3)
-        pygame.draw.rect(screen, (255, 0, 0), button_4)
+        pygame.draw.rect(screen, (100, 100, 100), button_4)
+        pygame.draw.rect(screen, (100, 100, 100), button_5)
+        pygame.draw.rect(screen, (100, 100, 100), button_6)
+        pygame.draw.rect(screen, (255, 0, 0), button_7)
 
-        draw_text("Murder", pygame.font.Font(None, 54), BLACK, screen, button_x-100, button_y - 100)
-        draw_text("Innocent", pygame.font.Font(None, 54), BLACK, screen, button_x-150, button_y+50)
-        draw_text("Détective", pygame.font.Font(None, 54), BLACK, screen, button_x-150, button_y + 200)
-        draw_text("Retour", pygame.font.Font(None, 54), BLACK, screen, button_x-150, button_y + 350)
+        draw_text("Murder", pygame.font.Font(None, 54), BLACK, screen, button_x-50, button_y - 100)
+        draw_text("Innocent", pygame.font.Font(None, 54), BLACK, screen, button_x-50, button_y+50)
+        draw_text("Détective", pygame.font.Font(None, 54), BLACK, screen, button_x-50, button_y + 200)
+        draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x+450, button_y - 100)
+        draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x+450, button_y+50)
+        draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x+450, button_y + 200)
+        draw_text("Retour", pygame.font.Font(None, 54), BLACK, screen, button_x+200, button_y + 350)
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
@@ -351,7 +380,7 @@ def set_menu():
                             player.role = 'Innocent'
                         if button_3.collidepoint((mx, my)):
                             player.role = "Détective"
-                        if button_4.collidepoint((mx, my)):
+                        if button_7.collidepoint((mx, my)):
                             pause_menu()
                     
 
@@ -373,6 +402,7 @@ def set_menu():
 def checkalive():
     for player in players:
         if player.etat == False:
+        
             players.remove(player)
 
 
@@ -409,6 +439,7 @@ def checkcollision(p1, c1):
 def bulletsmanage():
     for player in players:
         for bullet in player.bulletlist:
+
             bullet.draw()
             bullet.move() 
 
