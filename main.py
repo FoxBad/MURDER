@@ -241,19 +241,28 @@ def main_menu():
 
         winsize()
 
-        button_width = 400
-        button_height = 100
+
+
+        button_width = 500
+        button_height = 200
+
+        bplay = pygame.image.load(os.path.join("assets", "play.png"))
+        bplay = pygame.transform.scale(bplay,(button_width,button_height))
+        
+
+        bquit = pygame.image.load(os.path.join("assets", "quit.png"))
+        bquit = pygame.transform.scale(bquit,(button_width,button_height))
+        
+
         button_x = ws // 2 - button_width // 2
         button_y = hs // 2 - button_height // 2
 
-        button_1 = pygame.Rect(button_x, button_y, button_width, button_height)
-        button_2 = pygame.Rect(button_x, button_y + 200, button_width, button_height)
+        bplayrect = bplay.get_rect(topleft=(button_x, button_y))
+        bquitrect = bquit.get_rect(topleft=(button_x, button_y + 250))
 
-        pygame.draw.rect(screen, (0, 255, 0), button_1)
-        pygame.draw.rect(screen, (255, 0, 0), button_2)
-
-        draw_text("Jouer", pygame.font.Font(None, 54), BLACK, screen, ws // 2, button_y + 50)
-        draw_text("Quitter", pygame.font.Font(None, 54), BLACK, screen, ws // 2, button_y + 250)
+        screen.blit(bplay, (button_x, button_y))
+        screen.blit(bquit, (button_x, button_y + 250))
+        
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
@@ -261,9 +270,9 @@ def main_menu():
                 sys.exit()
             if e.type == pygame.MOUSEBUTTONDOWN:
                 if e.button == 1:
-                    if button_1.collidepoint((mx, my)):
+                    if bplayrect.collidepoint((mx, my)):
                         game()
-                    if button_2.collidepoint((mx, my)):
+                    if bquitrect.collidepoint((mx, my)):
                         pygame.quit()
                         sys.exit()
 
