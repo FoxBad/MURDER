@@ -5,7 +5,7 @@
 import sys, os, math, random
 import pygame
 from pygame.locals import *
-
+from PIL import Image, ImageFilter
 
 #-------------------------------INIT-----------------------------
 
@@ -184,13 +184,21 @@ MAGENTA = (255, 0, 255)
 pygame.display.set_caption("Murder")
 
 ino = pygame.image.load(os.path.join("assets", "ino.png"))
+
 detect = pygame.image.load(os.path.join("assets", "detect.png"))
+
 murder = pygame.image.load(os.path.join("assets", "murder.png"))
+
 settings = pygame.image.load(os.path.join("assets", "settings.png"))
+settings = pygame.transform.scale(settings, (75, 75))
+
+
+
+
 sector = pygame.image.load(os.path.join("assets", "sector.png"))
 sector = pygame.transform.scale(sector, (100, 100))
 sector  = pygame.transform.rotate(sector, 300)
-settings = pygame.transform.scale(settings, (75, 75))
+
 
 players = []
 
@@ -222,7 +230,11 @@ def keyPressed(inputKey):
 
 def main_menu():
     while True:
-        screen.fill(WHITE)
+
+        fond = pygame.image.load(os.path.join("assets", "fond.jpg"))
+        fond = pygame.transform.scale(fond,(ws,hs))
+        screen.blit(fond, fond.get_rect())
+
         draw_text("Menu Principal", pygame.font.Font(None, 72), BLACK, screen, ws // 2, hs // 4)
 
         mx, my = pygame.mouse.get_pos()
