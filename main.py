@@ -103,8 +103,7 @@ class Player():
     def murder(self):
 
 
-
-
+        """
         if self.murderstat == True and self.role == "Murder":
             
             pos = pygame.mouse.get_pos()
@@ -118,7 +117,7 @@ class Player():
             rect = image.get_rect(center=(self.x - math.sin(math.radians(angle)), self.y - math.cos(math.radians(angle))))
 
             screen.blit(image, rect)
-            
+            """         
 
     def innocent(self):
         if self.role == 'Innocent':
@@ -505,7 +504,9 @@ def playermanage():
 
     for player in players:
         draw_text(player.role, pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-80)
-        draw_text(str(player.bullet) + " •", pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-60)
+        
+        if player.role == 'Détective':
+            draw_text(str(player.bullet) + " •", pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-60)
 
 
         #draw_text(player.role, pygame.font.Font(None, 54), BLACK, screen, ws*15 // 20, hs // 20)
@@ -572,9 +573,9 @@ def event():
                     player.bullet -= 1
                     player.bulletlist.append(new_bul)
 
-                if e.key == pygame.K_SPACE and player.role == "Murder" and player.murderstat == True:
-                    circle = pygame.draw.circle(screen, RED, [player.x, player.y], 100, 0)
-                    checkcollision(player, circle)
+                #if e.key == pygame.K_SPACE and player.role == "Murder" and player.murderstat == True:
+                    #circle = pygame.draw.circle(screen, RED, [player.x, player.y], 100, 0)
+                    #checkcollision(player, circle)
 
 
                 if e.key == pygame.K_e and player.role == "Murder":
