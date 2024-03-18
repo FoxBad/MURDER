@@ -231,20 +231,23 @@ def keyPressed(inputKey):
 def main_menu():
     while True:
 
-        fond = pygame.image.load(os.path.join("assets", "fond.jpg"))
+        fond = pygame.image.load(os.path.join("assets", "fond.png"))
         fond = pygame.transform.scale(fond,(ws,hs))
         screen.blit(fond, fond.get_rect())
 
-        draw_text("Menu Principal", pygame.font.Font(None, 72), BLACK, screen, ws // 2, hs // 4)
+        logo = pygame.image.load(os.path.join("assets", "logo.png"))
+        logo = pygame.transform.scale(logo,(300,300))
+        logorect = logo.get_rect(center=(ws // 2, hs // 5))
+        screen.blit(logo, logorect)
+
 
         mx, my = pygame.mouse.get_pos()
 
         winsize()
 
 
-
-        button_width = 500
-        button_height = 200
+        button_width = 375
+        button_height = 150
 
         bplay = pygame.image.load(os.path.join("assets", "play.png"))
         bplay = pygame.transform.scale(bplay,(button_width,button_height))
@@ -254,13 +257,16 @@ def main_menu():
         bquit = pygame.transform.scale(bquit,(button_width,button_height))
         
 
+        set_rect = settings.get_rect(center=(50, 50))
+        screen.blit(settings, set_rect)
+
         button_x = ws // 2 - button_width // 2
         button_y = hs // 2 - button_height // 2
 
-        bplayrect = bplay.get_rect(topleft=(button_x, button_y))
+        bplayrect = bplay.get_rect(topleft=(button_x, button_y +50))
         bquitrect = bquit.get_rect(topleft=(button_x, button_y + 250))
 
-        screen.blit(bplay, (button_x, button_y))
+        screen.blit(bplay, (button_x, button_y+50))
         screen.blit(bquit, (button_x, button_y + 250))
         
 
@@ -272,6 +278,8 @@ def main_menu():
                 if e.button == 1:
                     if bplayrect.collidepoint((mx, my)):
                         game()
+                    if set_rect.collidepoint((mx, my)):
+                        set_menu()
                     if bquitrect.collidepoint((mx, my)):
                         pygame.quit()
                         sys.exit()
@@ -328,14 +336,9 @@ def pause_menu():
                     if button_2.collidepoint((mx, my)):
                         main_menu()
                     if set_rect.collidepoint((mx, my)):
-                        set_menu()
+                        set_jeu()
 
             if e.type == pygame.KEYDOWN:
-                if e.key == pygame.K_f:
-                    if screen.get_flags() & FULLSCREEN:
-                        pygame.display.set_mode((w, h))
-                    else:
-                        pygame.display.set_mode((1920, 1080), FULLSCREEN)
                 if e.key == pygame.K_ESCAPE:
                     game()
 
@@ -344,17 +347,23 @@ def pause_menu():
         pygame.display.update()
 
 
-#-------------------------------OPTIONS MENU-----------------------------
+#-------------------------------OPTIONS JEU-----------------------------
 
 
-def set_menu():
+def set_jeu():
     while True:
         screen.fill(WHITE)
-        draw_text("Options", pygame.font.Font(None, 72), BLACK, screen, ws // 2, (hs // 4) -100)
+        
 
         mx, my = pygame.mouse.get_pos()
 
         winsize()
+
+        setfond = pygame.image.load(os.path.join("assets", "setfond.png"))
+        setfond = pygame.transform.scale(setfond,(ws,hs))
+        screen.blit(setfond, setfond.get_rect())
+
+        draw_text("Options", pygame.font.Font(None, 72), BLACK, screen, ws // 2, (hs // 4) -100)
 
         button_width = 400
         button_height = 100
@@ -370,9 +379,9 @@ def set_menu():
         button_7 = pygame.Rect(button_x, button_y + 300, button_width, button_height)
         
 
-        pygame.draw.rect(screen, (100, 100, 100), button_1)
-        pygame.draw.rect(screen, (100, 100, 100), button_2)
-        pygame.draw.rect(screen, (100, 100, 100), button_3)
+        pygame.draw.rect(screen, (0, 255, 0), button_1)
+        pygame.draw.rect(screen, (0, 255, 0), button_2)
+        pygame.draw.rect(screen, (0, 255, 0), button_3)
         pygame.draw.rect(screen, (100, 100, 100), button_4)
         pygame.draw.rect(screen, (100, 100, 100), button_5)
         pygame.draw.rect(screen, (100, 100, 100), button_6)
@@ -406,17 +415,81 @@ def set_menu():
                     
 
             if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_ESCAPE:
+                    pause_menu()
+
+        pygame.display.update()
+
+#-------------------------------OPTIONS MENU-----------------------------
+
+
+def set_menu():
+    while True:
+        screen.fill(WHITE)
+
+        mx, my = pygame.mouse.get_pos()
+
+        winsize()
+
+        setfond = pygame.image.load(os.path.join("assets", "setfond.png"))
+        setfond = pygame.transform.scale(setfond,(ws,hs))
+        screen.blit(setfond, setfond.get_rect())
+
+        draw_text("Options", pygame.font.Font(None, 72), BLACK, screen, ws // 2, (hs // 4) -100)
+
+        button_width = 400
+        button_height = 100
+        button_x = ws // 2 - button_width // 2
+        button_y = hs // 2 - button_height // 2
+
+        button_1 = pygame.Rect(button_x -250, button_y -150, button_width, button_height)
+        button_2 = pygame.Rect(button_x -250, button_y, button_width, button_height)
+        button_3 = pygame.Rect(button_x -250, button_y + 150, button_width, button_height)
+        button_4 = pygame.Rect(button_x +250, button_y -150, button_width, button_height)
+        button_5 = pygame.Rect(button_x +250, button_y, button_width, button_height)
+        button_6 = pygame.Rect(button_x +250, button_y + 150, button_width, button_height)
+        button_7 = pygame.Rect(button_x, button_y + 300, button_width, button_height)
+        
+
+        pygame.draw.rect(screen, (100, 100, 100), button_1)
+        pygame.draw.rect(screen, (100, 100, 100), button_2)
+        pygame.draw.rect(screen, (100, 100, 100), button_3)
+        pygame.draw.rect(screen, (100, 100, 100), button_4)
+        pygame.draw.rect(screen, (100, 100, 100), button_5)
+        pygame.draw.rect(screen, (100, 100, 100), button_6)
+        pygame.draw.rect(screen, (255, 0, 0), button_7)
+
+        draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x-50, button_y - 100)
+        draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x-50, button_y+50)
+        draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x-50, button_y + 200)
+        draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x+450, button_y - 100)
+        draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x+450, button_y+50)
+        draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x+450, button_y + 200)
+        draw_text("Retour", pygame.font.Font(None, 54), BLACK, screen, button_x+200, button_y + 350)
+
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                if e.button == 1:
+
+                    for player in players:
+
+                        if button_7.collidepoint((mx, my)):
+                            main_menu()
+                    
+
+            if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_f:
                     if screen.get_flags() & FULLSCREEN:
                         pygame.display.set_mode((w, h))
                     else:
                         pygame.display.set_mode((1920, 1080), FULLSCREEN)
                 if e.key == pygame.K_ESCAPE:
-                    pause_menu()
+                    main_menu()
 
         pygame.display.update()
-
-
 
 #-------------------------------JEU-----------------------------
 
@@ -429,10 +502,14 @@ def checkalive():
 
 def playermanage():
     
-    draw_text(M1.role, pygame.font.Font(None, 54), BLACK, screen, ws*5 // 20, hs // 20)
-    draw_text(str(M1.bullet) + " •", pygame.font.Font(None, 54), BLACK, screen, ws*5 // 20, hs*2 // 20)
-    draw_text(M2.role, pygame.font.Font(None, 54), BLACK, screen, ws*15 // 20, hs // 20)
-    draw_text(str(M2.bullet) + " •", pygame.font.Font(None, 54), BLACK, screen, ws*15 // 20, hs*2 // 20)
+
+    for player in players:
+        draw_text(player.role, pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-80)
+        draw_text(str(player.bullet) + " •", pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-60)
+
+
+        #draw_text(player.role, pygame.font.Font(None, 54), BLACK, screen, ws*15 // 20, hs // 20)
+        #draw_text(str(player.bullet) + " •", pygame.font.Font(None, 54), BLACK, screen, ws*15 // 20, hs*2 // 20)
 
     for player in players:
 
@@ -484,16 +561,9 @@ def event():
             sys.exit()
 
         if e.type == pygame.KEYDOWN:
-            if e.key == pygame.K_f:
-                if screen.get_flags() & FULLSCREEN:
-                    pygame.display.set_mode((w, h))
-                else:
-                    pygame.display.set_mode((1920, 1080), FULLSCREEN)
 
             if e.key == pygame.K_ESCAPE:
                 pause_menu()
-
-
 
 
             for player in players:
