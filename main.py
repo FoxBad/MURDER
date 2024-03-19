@@ -437,8 +437,15 @@ def set_menu():
 
         button_width = 400
         button_height = 100
+
+        button_width2 = 375
+        button_height2 = 150
+
         button_x = ws // 2 - button_width // 2
         button_y = hs // 2 - button_height // 2
+
+        breturn = pygame.image.load(os.path.join("assets", "return.png"))
+        breturn = pygame.transform.scale(breturn,(button_width2,button_height2))
 
         button_1 = pygame.Rect(button_x -250, button_y -150, button_width, button_height)
         button_2 = pygame.Rect(button_x -250, button_y, button_width, button_height)
@@ -446,7 +453,6 @@ def set_menu():
         button_4 = pygame.Rect(button_x +250, button_y -150, button_width, button_height)
         button_5 = pygame.Rect(button_x +250, button_y, button_width, button_height)
         button_6 = pygame.Rect(button_x +250, button_y + 150, button_width, button_height)
-        button_7 = pygame.Rect(button_x, button_y + 300, button_width, button_height)
         
 
         pygame.draw.rect(screen, (100, 100, 100), button_1)
@@ -455,7 +461,7 @@ def set_menu():
         pygame.draw.rect(screen, (100, 100, 100), button_4)
         pygame.draw.rect(screen, (100, 100, 100), button_5)
         pygame.draw.rect(screen, (100, 100, 100), button_6)
-        pygame.draw.rect(screen, (255, 0, 0), button_7)
+    
 
         draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x-50, button_y - 100)
         draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x-50, button_y+50)
@@ -463,7 +469,10 @@ def set_menu():
         draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x+450, button_y - 100)
         draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x+450, button_y+50)
         draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x+450, button_y + 200)
-        draw_text("Retour", pygame.font.Font(None, 54), BLACK, screen, button_x+200, button_y + 350)
+    
+        breturnrect = breturn.get_rect(center=(button_x +200, button_y +350))
+        screen.blit(breturn,breturnrect)
+        
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
@@ -474,7 +483,7 @@ def set_menu():
 
                     for player in players:
 
-                        if button_7.collidepoint((mx, my)):
+                        if breturnrect.collidepoint((mx, my)):
                             main_menu()
                     
 
