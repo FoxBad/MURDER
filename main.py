@@ -5,7 +5,6 @@
 import sys, os, math, random
 import pygame
 from pygame.locals import *
-from PIL import Image, ImageFilter
 
 #-------------------------------INIT-----------------------------
 
