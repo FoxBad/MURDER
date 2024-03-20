@@ -5,6 +5,7 @@
 import sys, os, math, random
 import pygame
 from pygame.locals import *
+import button, image
 
 #-------------------------------INIT-----------------------------
 
@@ -16,6 +17,10 @@ fpsClock = pygame.time.Clock()
 info = pygame.display.Info()
 w = 1000
 h = 800
+
+pygame.display.set_caption("APEO - BETA")
+icon = pygame.image.load(os.path.join("assets", "logot.png"))
+pygame.display.set_icon(icon)
 
 screen = pygame.display.set_mode((w, h))
 
@@ -89,13 +94,6 @@ class Player():
         image  = pygame.transform.rotate(self.img, angle)
         rect  = image.get_rect(center = (self.x, self.y))
         self.rect = pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
-
-
-
-        '''
-        bras = (self.x + 100 * math.sin(angle), self.y + 100 * math.cos(angle))
-        pygame.draw.rect(screen, BLACK, pygame.Rect(bras[0], bras[1], 20, 20))
-        '''
 
         screen.blit(image, rect)
     
@@ -179,19 +177,18 @@ CYAN = (0, 255, 255)
 MAGENTA = (255, 0, 255)
 
 
-pygame.display.set_caption("Murder")
+button_width = 375
+button_height = 150
+
+text_width = 500
+text_height = 200
+
 
 ino = pygame.image.load(os.path.join("assets", "ino.png"))
 
 detect = pygame.image.load(os.path.join("assets", "detect.png"))
 
 murder = pygame.image.load(os.path.join("assets", "murder.png"))
-
-settings = pygame.image.load(os.path.join("assets", "settings.png"))
-settings = pygame.transform.scale(settings, (75, 75))
-
-
-
 
 sector = pygame.image.load(os.path.join("assets", "sector.png"))
 sector = pygame.transform.scale(sector, (100, 100))
@@ -221,6 +218,9 @@ def keyPressed(inputKey):
     else:
         return False
 
+def tryquit():
+    pygame.quit()
+    sys.exit()
 
 
 
@@ -229,58 +229,36 @@ def keyPressed(inputKey):
 def main_menu():
     while True:
 
-        fond = pygame.image.load(os.path.join("assets", "fond.png"))
-        fond = pygame.transform.scale(fond,(ws,hs))
-        screen.blit(fond, fond.get_rect())
-
-        logo = pygame.image.load(os.path.join("assets", "logo.png"))
-        logo = pygame.transform.scale(logo,(300,300))
-        logorect = logo.get_rect(center=(ws // 2, hs // 5))
-        screen.blit(logo, logorect)
-
-
         mx, my = pygame.mouse.get_pos()
 
         winsize()
 
+        button_x = ws // 2
+        button_y = hs // 2
 
-        button_width = 375
-        button_height = 150
-
-        bplay = pygame.image.load(os.path.join("assets", "play.png"))
-        bplay = pygame.transform.scale(bplay,(button_width,button_height))
+        fond = image.Image(ws // 2, hs // 2, "fond.png", (ws,hs))
+        #fond.draw(screen)
         
+        play_button = button.Button(button_x, button_y +50, "play.png", (button_width,button_height))
+        if play_button.draw(screen):
+            game()
 
-        bquit = pygame.image.load(os.path.join("assets", "quit.png"))
-        bquit = pygame.transform.scale(bquit,(button_width,button_height))
-        
+        quit_button = button.Button(button_x, button_y +250, "quit.png", (button_width,button_height))
+        if quit_button.draw(screen):
+            tryquit()
 
-        set_rect = settings.get_rect(center=(50, 50))
-        screen.blit(settings, set_rect)
+        settings_button = button.Button(50, 50, "settings.png", (75, 75))
+        if settings_button.draw(screen):
+            set_menu()
 
-        button_x = ws // 2 - button_width // 2
-        button_y = hs // 2 - button_height // 2
-
-        bplayrect = bplay.get_rect(topleft=(button_x, button_y +50))
-        bquitrect = bquit.get_rect(topleft=(button_x, button_y + 250))
-
-        screen.blit(bplay, (button_x, button_y+50))
-        screen.blit(bquit, (button_x, button_y + 250))
+        logo = image.Image(ws // 2, hs // 5, "logo.png", (300,300))
+        logo.draw(screen)
         
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if e.type == pygame.MOUSEBUTTONDOWN:
-                if e.button == 1:
-                    if bplayrect.collidepoint((mx, my)):
-                        game()
-                    if set_rect.collidepoint((mx, my)):
-                        set_menu()
-                    if bquitrect.collidepoint((mx, my)):
-                        pygame.quit()
-                        sys.exit()
 
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_f:
@@ -297,49 +275,41 @@ def main_menu():
 
 def pause_menu():
     while True:
-        screen.fill(WHITE)
-        draw_text("Pause", pygame.font.Font(None, 130), BLACK, screen, ws // 2, hs // 4)
+
+        fondp = image.Image(ws // 2, hs // 2, "fondp.jpg", (ws,hs))
+        #fondp.draw(screen)
+
+        pause = image.Image(ws // 2, hs // 4, "pause.png", (text_width,text_height))
+        pause.draw(screen)
 
         mx, my = pygame.mouse.get_pos()
 
         winsize()
 
-        button_width = 400
-        button_height = 100
-        button_x = ws // 2 - button_width // 2
-        button_y = hs // 2 - button_height // 2
+        button_x = ws // 2
+        button_y = hs // 2
 
-        button_1 = pygame.Rect(button_x, button_y, button_width, button_height)
-        button_2 = pygame.Rect(button_x, button_y + 200, button_width, button_height)
+        resume_button = button.Button(button_x, button_y +50, "resume.png", (button_width,button_height))
+        if resume_button.draw(screen):
+            game()
 
+        menu_button = button.Button(button_x, button_y +250, "menu.png", (button_width,button_height))
+        if menu_button.draw(screen):
+            main_menu()
 
+        settings_button = button.Button(50, 50, "settings.png", (75, 75))
+        if settings_button.draw(screen):
+            set_jeu()
 
-        pygame.draw.rect(screen, (0, 255, 0), button_1)
-        pygame.draw.rect(screen, (255, 0, 0), button_2)
-
-        draw_text("Reprendre", pygame.font.Font(None, 54), BLACK, screen, ws // 2, button_y + 50)
-        draw_text("Menu Principal", pygame.font.Font(None, 54), BLACK, screen, ws // 2, button_y + 250)
-
-        set_rect = settings.get_rect(center=(50, 50))
-        screen.blit(settings, set_rect)
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if e.type == pygame.MOUSEBUTTONDOWN:
-                if e.button == 1:
-                    if button_1.collidepoint((mx, my)):
-                        game()
-                    if button_2.collidepoint((mx, my)):
-                        main_menu()
-                    if set_rect.collidepoint((mx, my)):
-                        set_jeu()
 
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_ESCAPE:
                     game()
-
 
 
         pygame.display.update()
@@ -350,67 +320,55 @@ def pause_menu():
 
 def set_jeu():
     while True:
-        screen.fill(WHITE)
-        
 
         mx, my = pygame.mouse.get_pos()
 
         winsize()
 
-        setfond = pygame.image.load(os.path.join("assets", "setfond.png"))
-        setfond = pygame.transform.scale(setfond,(ws,hs))
-        screen.blit(setfond, setfond.get_rect())
-
-        draw_text("Options", pygame.font.Font(None, 72), BLACK, screen, ws // 2, (hs // 4) -100)
-
-        button_width = 400
+        button_width = 250
         button_height = 100
-        button_x = ws // 2 - button_width // 2
-        button_y = hs // 2 - button_height // 2
-
-        button_1 = pygame.Rect(button_x -250, button_y -150, button_width, button_height)
-        button_2 = pygame.Rect(button_x -250, button_y, button_width, button_height)
-        button_3 = pygame.Rect(button_x -250, button_y + 150, button_width, button_height)
-        button_4 = pygame.Rect(button_x +250, button_y -150, button_width, button_height)
-        button_5 = pygame.Rect(button_x +250, button_y, button_width, button_height)
-        button_6 = pygame.Rect(button_x +250, button_y + 150, button_width, button_height)
-        button_7 = pygame.Rect(button_x, button_y + 300, button_width, button_height)
         
+        button_x = ws // 2
+        button_y = hs // 2
 
-        pygame.draw.rect(screen, (0, 255, 0), button_1)
-        pygame.draw.rect(screen, (0, 255, 0), button_2)
-        pygame.draw.rect(screen, (0, 255, 0), button_3)
-        pygame.draw.rect(screen, (100, 100, 100), button_4)
-        pygame.draw.rect(screen, (100, 100, 100), button_5)
-        pygame.draw.rect(screen, (100, 100, 100), button_6)
-        pygame.draw.rect(screen, (255, 0, 0), button_7)
+        setfond = image.Image(ws // 2, hs // 2, "setfond.png", (ws,hs))
+        #setfond.draw(screen)
+        
+        settingst = image.Image(ws // 2, hs // 7, "settingst.png", (text_width,text_height))
+        settingst.draw(screen)
 
-        draw_text("Murder", pygame.font.Font(None, 54), BLACK, screen, button_x-50, button_y - 100)
-        draw_text("Innocent", pygame.font.Font(None, 54), BLACK, screen, button_x-50, button_y+50)
-        draw_text("Détective", pygame.font.Font(None, 54), BLACK, screen, button_x-50, button_y + 200)
-        draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x+450, button_y - 100)
-        draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x+450, button_y+50)
-        draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x+450, button_y + 200)
-        draw_text("Retour", pygame.font.Font(None, 54), BLACK, screen, button_x+200, button_y + 350)
+        button_1 = button.Button(button_x -250, button_y -150, "murderb.png", (button_width,button_height))
+        if button_1.draw(screen):
+            M1.role = "Murder"
+
+        button_2 = button.Button(button_x -250, button_y, "innocentb.png", (button_width,button_height))
+        if button_2.draw(screen):
+            M1.role = "Innocent"
+
+        button_3 = button.Button(button_x -250, button_y + 150, "detectiveb.png", (button_width,button_height))
+        if button_3.draw(screen):
+            M1.role = "Détective"
+
+        button_4 = button.Button(button_x +250, button_y -150, "add.png", (button_width,button_height))
+        if button_4.draw(screen):
+            pass
+
+        button_5 = button.Button(button_x +250, button_y, "add.png", (button_width,button_height))
+        if button_5.draw(screen):
+            pass
+
+        button_6 = button.Button(button_x +250, button_y + 150, "add.png", (button_width,button_height))
+        if button_6.draw(screen):
+            pass
+
+        return_button = button.Button(button_x, button_y +300, "return.png", (button_width,button_height))
+        if return_button.draw(screen):
+            pause_menu()
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if e.type == pygame.MOUSEBUTTONDOWN:
-                if e.button == 1:
-
-                    for player in players:
-
-                        if button_1.collidepoint((mx, my)):
-                            player.role = "Murder"
-                        if button_2.collidepoint((mx, my)):
-                            player.role = 'Innocent'
-                        if button_3.collidepoint((mx, my)):
-                            player.role = "Détective"
-                        if button_7.collidepoint((mx, my)):
-                            pause_menu()
-                    
 
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_ESCAPE:
@@ -423,69 +381,55 @@ def set_jeu():
 
 def set_menu():
     while True:
-        screen.fill(WHITE)
-
-        mx, my = pygame.mouse.get_pos()
 
         winsize()
 
-        setfond = pygame.image.load(os.path.join("assets", "setfond.png"))
-        setfond = pygame.transform.scale(setfond,(ws,hs))
-        screen.blit(setfond, setfond.get_rect())
-
-        draw_text("Options", pygame.font.Font(None, 72), BLACK, screen, ws // 2, (hs // 4) -100)
-
-        button_width = 400
+        button_width = 250
         button_height = 100
-
-        button_width2 = 375
-        button_height2 = 150
-
-        button_x = ws // 2 - button_width // 2
-        button_y = hs // 2 - button_height // 2
-
-        breturn = pygame.image.load(os.path.join("assets", "return.png"))
-        breturn = pygame.transform.scale(breturn,(button_width2,button_height2))
-
-        button_1 = pygame.Rect(button_x -250, button_y -150, button_width, button_height)
-        button_2 = pygame.Rect(button_x -250, button_y, button_width, button_height)
-        button_3 = pygame.Rect(button_x -250, button_y + 150, button_width, button_height)
-        button_4 = pygame.Rect(button_x +250, button_y -150, button_width, button_height)
-        button_5 = pygame.Rect(button_x +250, button_y, button_width, button_height)
-        button_6 = pygame.Rect(button_x +250, button_y + 150, button_width, button_height)
         
+        button_x = ws // 2
+        button_y = hs // 2
 
-        pygame.draw.rect(screen, (100, 100, 100), button_1)
-        pygame.draw.rect(screen, (100, 100, 100), button_2)
-        pygame.draw.rect(screen, (100, 100, 100), button_3)
-        pygame.draw.rect(screen, (100, 100, 100), button_4)
-        pygame.draw.rect(screen, (100, 100, 100), button_5)
-        pygame.draw.rect(screen, (100, 100, 100), button_6)
-    
+        setfond = image.Image(ws // 2, hs // 2, "setfond.png", (ws,hs))
+        #setfond.draw(screen)
+        
+        settingst = image.Image(ws // 2, hs // 7, "settingst.png", (text_width,text_height))
+        settingst.draw(screen)
 
-        draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x-50, button_y - 100)
-        draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x-50, button_y+50)
-        draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x-50, button_y + 200)
-        draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x+450, button_y - 100)
-        draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x+450, button_y+50)
-        draw_text("ADD", pygame.font.Font(None, 54), BLACK, screen, button_x+450, button_y + 200)
-    
-        breturnrect = breturn.get_rect(center=(button_x +200, button_y +350))
-        screen.blit(breturn,breturnrect)
+        button_1 = button.Button(button_x -250, button_y -150, "add.png", (button_width,button_height))
+        if button_1.draw(screen):
+            pass
+
+        button_2 = button.Button(button_x -250, button_y, "add.png", (button_width,button_height))
+        if button_2.draw(screen):
+            pass
+
+        button_3 = button.Button(button_x -250, button_y + 150, "add.png", (button_width,button_height))
+        if button_3.draw(screen):
+            pass
+
+        button_4 = button.Button(button_x +250, button_y -150, "add.png", (button_width,button_height))
+        if button_4.draw(screen):
+            pass
+
+        button_5 = button.Button(button_x +250, button_y, "add.png", (button_width,button_height))
+        if button_5.draw(screen):
+            pass
+
+        button_6 = button.Button(button_x +250, button_y + 150, "add.png", (button_width,button_height))
+        if button_6.draw(screen):
+            pass
+
+        return_button = button.Button(button_x, button_y + 300, "return.png", (button_width,button_height))
+        if return_button.draw(screen):
+            main_menu()
+            
         
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit()
-                sys.exit()
-            if e.type == pygame.MOUSEBUTTONDOWN:
-                if e.button == 1:
-
-                    for player in players:
-
-                        if breturnrect.collidepoint((mx, my)):
-                            main_menu()
-                    
+                sys.exit()   
 
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_f:
