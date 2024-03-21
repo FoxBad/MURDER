@@ -237,7 +237,7 @@ def main_menu():
         button_y = hs // 2
 
         fond = image.Image(ws // 2, hs // 2, "fond.png", (ws,hs))
-        #fond.draw(screen)
+        fond.draw(screen)
         
         play_button = button.Button(button_x, button_y +50, "play.png", (button_width,button_height))
         if play_button.draw(screen):
@@ -277,7 +277,7 @@ def pause_menu():
     while True:
 
         fondp = image.Image(ws // 2, hs // 2, "fondp.jpg", (ws,hs))
-        #fondp.draw(screen)
+        fondp.draw(screen)
 
         pause = image.Image(ws // 2, hs // 4, "pause.png", (text_width,text_height))
         pause.draw(screen)
@@ -332,7 +332,7 @@ def set_jeu():
         button_y = hs // 2
 
         setfond = image.Image(ws // 2, hs // 2, "setfond.png", (ws,hs))
-        #setfond.draw(screen)
+        setfond.draw(screen)
         
         settingst = image.Image(ws // 2, hs // 7, "settingst.png", (text_width,text_height))
         settingst.draw(screen)
@@ -391,7 +391,7 @@ def set_menu():
         button_y = hs // 2
 
         setfond = image.Image(ws // 2, hs // 2, "setfond.png", (ws,hs))
-        #setfond.draw(screen)
+        setfond.draw(screen)
         
         settingst = image.Image(ws // 2, hs // 7, "settingst.png", (text_width,text_height))
         settingst.draw(screen)

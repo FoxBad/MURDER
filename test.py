@@ -1,8 +1,11 @@
- #-------------------------------IMPORT-----------------------------
+
+#-------------------------------IMPORT-----------------------------
+
 
 import sys, os, math, random
 import pygame
 from pygame.locals import *
+import button, image
 
 #-------------------------------INIT-----------------------------
 
@@ -15,9 +18,17 @@ info = pygame.display.Info()
 w = 1000
 h = 800
 
+pygame.display.set_caption("APEO - BETA")
+icon = pygame.image.load(os.path.join("assets", "logot.png"))
+pygame.display.set_icon(icon)
+
 screen = pygame.display.set_mode((w, h))
 
-pygame.display.set_caption("Murder")
+def winsize():
+    global ws, hs
+    ws, hs = screen.get_size()
+
+winsize()
 
 
 #-------------------------------CLASS-----------------------------
@@ -29,18 +40,20 @@ class Player():
         self.sx = sx
         self.sy = sy
         self.nom = nom      
-        self.vie = 3
+        self.vie = 1
         self.etat = True
         self.speed = speed
         self.role = self.choisir_role()  # Choix aléatoire du rôle
-        self.murder = False
+        self.murderstat = False
         self.Ku = Ku
         self.Kd = Kd
         self.Kl = Kl
         self.Kr = Kr
         self.bulletlist = []
+        self.bullet = 3
+        self.destx, self.desty = pygame.mouse.get_pos()
+        self.sector = sector
         
-
         
         if self.role == 'Innocent':
             self.img = ino
@@ -56,7 +69,7 @@ class Player():
         role = random.choices(roles, weights=poids_roles, k=1)[0]
         return role
 
-    def draw(self):
+    def update(self):
         
         self.img = pygame.transform.scale(self.img, (self.sx, self.sy))
         keys = pygame.key.get_pressed()
@@ -68,20 +81,50 @@ class Player():
             self.y -= self.speed 
         if keys[self.Kd]:
             self.y += self.speed
+        
+    def orientation(self):
 
         pos = pygame.mouse.get_pos()
 
         x_dist = pos[0] - self.x
         y_dist = -(pos[1] - self.y)
+        
         angle = math.degrees(math.atan2(y_dist, x_dist))
-
+    
         image  = pygame.transform.rotate(self.img, angle)
         rect  = image.get_rect(center = (self.x, self.y))
         self.rect = pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
-        
-        
-        screen.blit(image, rect)
 
+        screen.blit(image, rect)
+    
+    def murder(self):
+
+
+        """
+        if self.murderstat == True and self.role == "Murder":
+            
+            pos = pygame.mouse.get_pos()
+
+            x_dist = pos[0] - self.x
+            y_dist = -(pos[1] - self.y)
+        
+            angle = math.degrees(math.atan2(y_dist, x_dist))
+    
+            image  = pygame.transform.rotate(self.sector, angle)
+            rect = image.get_rect(center=(self.x - math.sin(math.radians(angle)), self.y - math.cos(math.radians(angle))))
+
+            screen.blit(image, rect)
+            """         
+
+    def innocent(self):
+        if self.role == 'Innocent':
+            self.murder == False
+            self.img = ino
+
+    def detective(self):
+        if self.role == 'Détective':
+            self.murder == False
+            self.img = detect
 
     def perdre_vie(self):
         self.vie -= 1
@@ -102,8 +145,6 @@ class Bullet:
         self.center = [self.x, self.y]
         self.speed = 20  
         
-
-
         vect = (self.destx - self.x, self.desty - self.y)
         angle = math.atan2(vect[1], vect[0])
         self.change_x = math.cos(angle) * self.speed
@@ -112,10 +153,8 @@ class Bullet:
 
     def draw(self):
 
-
         self.circle = pygame.draw.circle(screen, BLACK, [self.x, self.y], self.radius, 0)
         self.rect = pygame.Rect(self.x-self.radius/2, self.y-self.radius/2, self.radius, self.radius)
-
 
 
     def move(self):
@@ -138,16 +177,28 @@ CYAN = (0, 255, 255)
 MAGENTA = (255, 0, 255)
 
 
+button_width = 375
+button_height = 150
+
+text_width = 500
+text_height = 200
+
+
 ino = pygame.image.load(os.path.join("assets", "ino.png"))
+
 detect = pygame.image.load(os.path.join("assets", "detect.png"))
+
 murder = pygame.image.load(os.path.join("assets", "murder.png"))
-settings = pygame.image.load(os.path.join("assets", "settings.png"))
-settings = pygame.transform.scale(settings, (75, 75))
+
+sector = pygame.image.load(os.path.join("assets", "sector.png"))
+sector = pygame.transform.scale(sector, (100, 100))
+sector  = pygame.transform.rotate(sector, 300)
+
 
 players = []
 
-M1 = Player(100, 100, 100, 100, "Murder1", 5,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d)
-M2 = Player(200, 300, 100, 100, "Murder2", 5, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT )
+M1 = Player(ws*5 // 20, hs*4 // 20, 100, 100, "Murder1", 5,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d)
+M2 = Player(ws*15 // 20, hs*4 // 20, 100, 100, "Murder2", 5, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT )
 players.append(M1)
 players.append(M2)
 
@@ -167,49 +218,47 @@ def keyPressed(inputKey):
     else:
         return False
 
-def winsize():
-    global ws, hs
-    ws, hs = screen.get_size()
+def tryquit():
+    pygame.quit()
+    sys.exit()
 
-winsize()
 
 
 #-------------------------------MAIN MENU-----------------------------
 
 def main_menu():
     while True:
-        screen.fill(WHITE)
-        draw_text("Menu Principal", pygame.font.Font(None, 72), BLACK, screen, ws // 2, hs // 4)
 
         mx, my = pygame.mouse.get_pos()
 
         winsize()
 
-        button_width = 400
-        button_height = 100
-        button_x = ws // 2 - button_width // 2
-        button_y = hs // 2 - button_height // 2
+        button_x = ws // 2
+        button_y = hs // 2
 
-        button_1 = pygame.Rect(button_x, button_y, button_width, button_height)
-        button_2 = pygame.Rect(button_x, button_y + 200, button_width, button_height)
+        fond = image.Image(ws // 2, hs // 2, "fond.png", (ws,hs))
+        fond.draw(screen)
+        
+        play_button = button.Button(button_x, button_y +50, "play.png", (button_width,button_height))
+        if play_button.draw(screen):
+            game()
 
-        pygame.draw.rect(screen, (0, 255, 0), button_1)
-        pygame.draw.rect(screen, (255, 0, 0), button_2)
+        quit_button = button.Button(button_x, button_y +250, "quit.png", (button_width,button_height))
+        if quit_button.draw(screen):
+            tryquit()
 
-        draw_text("Jouer", pygame.font.Font(None, 54), BLACK, screen, ws // 2, button_y + 50)
-        draw_text("Quitter", pygame.font.Font(None, 54), BLACK, screen, ws // 2, button_y + 250)
+        settings_button = button.Button(50, 50, "settings.png", (75, 75))
+        if settings_button.draw(screen):
+            set_menu()
+
+        logo = image.Image(ws // 2, hs // 5, "logo.png", (300,300))
+        logo.draw(screen)
+        
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if e.type == pygame.MOUSEBUTTONDOWN:
-                if e.button == 1:
-                    if button_1.collidepoint((mx, my)):
-                        game()
-                    if button_2.collidepoint((mx, my)):
-                        pygame.quit()
-                        sys.exit()
 
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_f:
@@ -226,109 +275,161 @@ def main_menu():
 
 def pause_menu():
     while True:
-        screen.fill(WHITE)
-        draw_text("Pause", pygame.font.Font(None, 72), BLACK, screen, ws // 2, hs // 4)
+
+        fondp = image.Image(ws // 2, hs // 2, "fondp.jpg", (ws,hs))
+        fondp.draw(screen)
+
+        pause = image.Image(ws // 2, hs // 4, "pause.png", (text_width,text_height))
+        pause.draw(screen)
 
         mx, my = pygame.mouse.get_pos()
 
         winsize()
 
-        button_width = 400
-        button_height = 100
-        button_x = ws // 2 - button_width // 2
-        button_y = hs // 2 - button_height // 2
+        button_x = ws // 2
+        button_y = hs // 2
 
-        button_1 = pygame.Rect(button_x, button_y, button_width, button_height)
-        button_2 = pygame.Rect(button_x, button_y + 200, button_width, button_height)
+        resume_button = button.Button(button_x, button_y +50, "resume.png", (button_width,button_height))
+        if resume_button.draw(screen):
+            game()
 
+        menu_button = button.Button(button_x, button_y +250, "menu.png", (button_width,button_height))
+        if menu_button.draw(screen):
+            main_menu()
 
+        settings_button = button.Button(50, 50, "settings.png", (75, 75))
+        if settings_button.draw(screen):
+            set_jeu()
 
-        pygame.draw.rect(screen, (0, 255, 0), button_1)
-        pygame.draw.rect(screen, (255, 0, 0), button_2)
-
-        draw_text("Reprendre", pygame.font.Font(None, 54), BLACK, screen, ws // 2, button_y + 50)
-        draw_text("Menu Principal", pygame.font.Font(None, 54), BLACK, screen, ws // 2, button_y + 250)
-
-        set_rect = settings.get_rect(center=(50, 50))
-        screen.blit(settings, set_rect)
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if e.type == pygame.MOUSEBUTTONDOWN:
-                if e.button == 1:
-                    if button_1.collidepoint((mx, my)):
-                        game()
-                    if button_2.collidepoint((mx, my)):
-                        main_menu()
-                    if set_rect.collidepoint((mx, my)):
-                        set_menu()
 
             if e.type == pygame.KEYDOWN:
-                if e.key == pygame.K_f:
-                    if screen.get_flags() & FULLSCREEN:
-                        pygame.display.set_mode((w, h))
-                    else:
-                        pygame.display.set_mode((1920, 1080), FULLSCREEN)
                 if e.key == pygame.K_ESCAPE:
                     game()
 
 
-
         pygame.display.update()
 
+
+#-------------------------------OPTIONS JEU-----------------------------
+
+
+def set_jeu():
+    while True:
+
+        mx, my = pygame.mouse.get_pos()
+
+        winsize()
+
+        button_width = 250
+        button_height = 100
+        
+        button_x = ws // 2
+        button_y = hs // 2
+
+        setfond = image.Image(ws // 2, hs // 2, "setfond.png", (ws,hs))
+        setfond.draw(screen)
+        
+        settingst = image.Image(ws // 2, hs // 7, "settingst.png", (text_width,text_height))
+        settingst.draw(screen)
+
+        button_1 = button.Button(button_x -250, button_y -150, "murderb.png", (button_width,button_height))
+        if button_1.draw(screen):
+            M1.role = "Murder"
+
+        button_2 = button.Button(button_x -250, button_y, "innocentb.png", (button_width,button_height))
+        if button_2.draw(screen):
+            M1.role = "Innocent"
+
+        button_3 = button.Button(button_x -250, button_y + 150, "detectiveb.png", (button_width,button_height))
+        if button_3.draw(screen):
+            M1.role = "Détective"
+
+        button_4 = button.Button(button_x +250, button_y -150, "add.png", (button_width,button_height))
+        if button_4.draw(screen):
+            pass
+
+        button_5 = button.Button(button_x +250, button_y, "add.png", (button_width,button_height))
+        if button_5.draw(screen):
+            pass
+
+        button_6 = button.Button(button_x +250, button_y + 150, "add.png", (button_width,button_height))
+        if button_6.draw(screen):
+            pass
+
+        return_button = button.Button(button_x, button_y +300, "return.png", (button_width,button_height))
+        if return_button.draw(screen):
+            pause_menu()
+
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_ESCAPE:
+                    pause_menu()
+
+        pygame.display.update()
 
 #-------------------------------OPTIONS MENU-----------------------------
 
 
 def set_menu():
     while True:
-        screen.fill(WHITE)
-        draw_text("Options", pygame.font.Font(None, 72), BLACK, screen, ws // 2, (hs // 4) -100)
-
-        mx, my = pygame.mouse.get_pos()
 
         winsize()
 
-        button_width = 400
+        button_width = 250
         button_height = 100
-        button_x = ws // 2 - button_width // 2
-        button_y = hs // 2 - button_height // 2
+        
+        button_x = ws // 2
+        button_y = hs // 2
 
-        button_1 = pygame.Rect(button_x, button_y -150, button_width, button_height)
-        button_2 = pygame.Rect(button_x , button_y, button_width, button_height)
-        button_3 = pygame.Rect(button_x, button_y + 150, button_width, button_height)
-        button_4 = pygame.Rect(button_x, button_y + 300, button_width, button_height)
+        setfond = image.Image(ws // 2, hs // 2, "setfond.png", (ws,hs))
+        setfond.draw(screen)
+        
+        settingst = image.Image(ws // 2, hs // 7, "settingst.png", (text_width,text_height))
+        settingst.draw(screen)
 
-        pygame.draw.rect(screen, (100, 100, 100), button_1)
-        pygame.draw.rect(screen, (100, 100, 100), button_2)
-        pygame.draw.rect(screen, (100, 100, 100), button_3)
-        pygame.draw.rect(screen, (255, 0, 0), button_4)
+        button_1 = button.Button(button_x -250, button_y -150, "add.png", (button_width,button_height))
+        if button_1.draw(screen):
+            pass
 
-        draw_text("Murder", pygame.font.Font(None, 54), BLACK, screen, button_x+200, button_y - 100)
-        draw_text("Innocent", pygame.font.Font(None, 54), BLACK, screen, button_x+200, button_y+50)
-        draw_text("Détective", pygame.font.Font(None, 54), BLACK, screen, button_x+200, button_y + 200)
-        draw_text("Retour", pygame.font.Font(None, 54), BLACK, screen, button_x+200, button_y + 350)
+        button_2 = button.Button(button_x -250, button_y, "add.png", (button_width,button_height))
+        if button_2.draw(screen):
+            pass
+
+        button_3 = button.Button(button_x -250, button_y + 150, "add.png", (button_width,button_height))
+        if button_3.draw(screen):
+            pass
+
+        button_4 = button.Button(button_x +250, button_y -150, "add.png", (button_width,button_height))
+        if button_4.draw(screen):
+            pass
+
+        button_5 = button.Button(button_x +250, button_y, "add.png", (button_width,button_height))
+        if button_5.draw(screen):
+            pass
+
+        button_6 = button.Button(button_x +250, button_y + 150, "add.png", (button_width,button_height))
+        if button_6.draw(screen):
+            pass
+
+        return_button = button.Button(button_x, button_y + 300, "return.png", (button_width,button_height))
+        if return_button.draw(screen):
+            main_menu()
+            
+        
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit()
-                sys.exit()
-            if e.type == pygame.MOUSEBUTTONDOWN:
-                if e.button == 1:
-
-                    for player in players:
-
-                        if button_1.collidepoint((mx, my)):
-                            player.role = "Murder"
-                        if button_2.collidepoint((mx, my)):
-                            player.role = 'Innocent'
-                        if button_3.collidepoint((mx, my)):
-                            player.role = "Détective"
-                        if button_4.collidepoint((mx, my)):
-                            pause_menu()
-                    
+                sys.exit()   
 
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_f:
@@ -337,41 +438,40 @@ def set_menu():
                     else:
                         pygame.display.set_mode((1920, 1080), FULLSCREEN)
                 if e.key == pygame.K_ESCAPE:
-                    pause_menu()
+                    main_menu()
 
         pygame.display.update()
-
-
 
 #-------------------------------JEU-----------------------------
 
 def checkalive():
     for player in players:
         if player.etat == False:
+        
             players.remove(player)
 
 
 def playermanage():
+    
 
-    draw_text(M1.role, pygame.font.Font(None, 54), BLACK, screen, ws*18 // 20, hs // 20)
-    draw_text(M2.role, pygame.font.Font(None, 54), BLACK, screen, ws*10 // 20, hs // 20)
+    for player in players:
+        draw_text(player.role, pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-80)
+        
+        if player.role == 'Détective':
+            draw_text(str(player.bullet) + " •", pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-60)
+
+
+        #draw_text(player.role, pygame.font.Font(None, 54), BLACK, screen, ws*15 // 20, hs // 20)
+        #draw_text(str(player.bullet) + " •", pygame.font.Font(None, 54), BLACK, screen, ws*15 // 20, hs*2 // 20)
 
     for player in players:
 
-        player.draw()
-
-        if player.murder == True and player.role == "Murder":
-            pygame.draw.ellipse(screen, BLACK, [player.x-player.sx, player.y-player.sy, 200, 200], 5)
-            #circle = pygame.draw.circle(screen, GREEN, [player.x, player.y], 99, 0)
+        player.update()
+        player.orientation()
+        player.murder()
+        player.innocent()
+        player.detective()
             
-
-        if player.role == 'Innocent':
-            player.murder == False
-            player.img = ino
-        if player.role == 'Détective':
-            player.murder == False
-            player.img = detect
-
 
 def checkcollision(p1, c1):
 
@@ -390,6 +490,7 @@ def checkcollision(p1, c1):
 def bulletsmanage():
     for player in players:
         for bullet in player.bulletlist:
+
             bullet.draw()
             bullet.move() 
 
@@ -413,35 +514,29 @@ def event():
             sys.exit()
 
         if e.type == pygame.KEYDOWN:
-            if e.key == pygame.K_f:
-                if screen.get_flags() & FULLSCREEN:
-                    pygame.display.set_mode((w, h))
-                else:
-                    pygame.display.set_mode((1920, 1080), FULLSCREEN)
 
             if e.key == pygame.K_ESCAPE:
                 pause_menu()
 
 
-
-
             for player in players:
-                if e.key == pygame.K_SPACE and player.role == 'Détective':
+                if e.key == pygame.K_SPACE and player.role == 'Détective' and player.bullet > 0:
                     new_bul = Bullet(player)
+                    player.bullet -= 1
                     player.bulletlist.append(new_bul)
 
-                if e.key == pygame.K_SPACE and player.role == "Murder" and player.murder == True:
-                    circle = pygame.draw.circle(screen, RED, [player.x, player.y], 100, 0)
-                    checkcollision(player, circle)
+                #if e.key == pygame.K_SPACE and player.role == "Murder" and player.murderstat == True:
+                    #circle = pygame.draw.circle(screen, RED, [player.x, player.y], 100, 0)
+                    #checkcollision(player, circle)
 
 
                 if e.key == pygame.K_e and player.role == "Murder":
                     player.img = murder
-                    player.murder = True
+                    player.murderstat = True
                     
                 if e.key == pygame.K_r and player.role == "Murder":
                     player.img = ino
-                    player.murder = False
+                    player.murderstat = False
 
 
 # Game loop.
