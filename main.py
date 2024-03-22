@@ -8,6 +8,8 @@ import pygame
 from pygame.locals import *
 import button, image
 import pytmx
+from pytmx.util_pygame import load_pygame
+
 
 #-------------------------------INIT-----------------------------
 
@@ -28,6 +30,7 @@ screen = pygame.display.set_mode((w, h))
 
 
 
+
 def winsize():
     global ws, hs
     ws, hs = screen.get_size()
@@ -36,6 +39,12 @@ winsize()
 
 
 #-------------------------------CLASS-----------------------------
+
+class Tile(pygame.sprite.Sprite):
+    def __init__(self,pos,surf,groups):
+        super().__init__(groups)
+        self.image = surf
+        self.rect = self.image.get_rect(topleft = pos)
 
 class Player():
     def __init__(self, x, y, sx, sy, nom, speed, Ku, Kd, Kl, Kr):
@@ -168,6 +177,24 @@ class Bullet:
                 
 
 
+#-------------------------------TILED-----------------------------
+
+tmx_data = load_pygame(os.path.join("assets", "map.tmx"))
+sprite_group = pygame.sprite.Group()
+
+# cycle through all layers
+for layer in tmx_data.visible_layers:
+    # if layer.name in ('Floor', 'Plants and rocks', 'Pipes')
+    if hasattr(layer,'data'):
+        for x,y,surf in layer.tiles():
+            pos = (x * 128, y * 128)
+            Tile(pos = pos, surf = surf, groups = sprite_group)
+ 
+for obj in tmx_data.objects:
+    pos = obj.x,obj.y
+    if obj.type in ('Building', 'Vegetation'):
+        Tile(pos = pos, surf = obj.image, groups = sprite_group)
+ 
 #-------------------------------VARIABLE-----------------------------
 
 BLACK = (0, 0, 0)
@@ -448,6 +475,28 @@ def set_menu():
 
 #-------------------------------JEU-----------------------------
 
+
+def tiled():
+    sprite_group.draw(screen)
+    
+    for obj in tmx_data.objects:
+        pos = obj.x,obj.y
+        if obj.type == 'Shape':
+            if obj.name == 'Marker':
+                pygame.draw.circle(screen,'red',(obj.x,obj.y),5)
+            if obj.name == 'Rectangle':
+                rect = pygame.Rect(obj.x,obj.y,obj.width,obj.height)
+                pygame.draw.rect(screen,'yellow',rect)
+ 
+            if obj.name == 'Ellipse':
+                rect = pygame.Rect(obj.x,obj.y,obj.width,obj.height)
+                pygame.draw.ellipse(screen,'blue',rect)
+ 
+            if obj.name == 'Polygon':
+                points = [(point.x,point.y) for point in obj.points]
+                pygame.draw.polygon(screen,'green',points)
+
+
 def checkalive():
     for player in players:
         if player.etat == False:
@@ -551,6 +600,7 @@ def game():
 
         
         event()
+        tiled()
         checkalive()
         playermanage()
         bulletsmanage()
