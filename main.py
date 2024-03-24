@@ -6,6 +6,7 @@ import sys, os, math, random
 import csv
 import pygame
 from pygame.locals import *
+from pygame.sprite import Sprite
 import button, image
 import pytmx
 from pytmx.util_pygame import load_pygame
@@ -39,6 +40,7 @@ winsize()
 
 
 #-------------------------------CLASS-----------------------------
+
 
 class Tile(pygame.sprite.Sprite):
     def __init__(self,pos,surf,groups):
@@ -145,8 +147,19 @@ class Player():
         if self.vie <=0:
             self.etat = False
 
-    
+"""
+class CameraGroup(pygame.sprite.Group):
 
+    def __init__(self, *sprites: Sprite | sys.Sequence[Sprite]) -> None:
+        super().__init__(*sprites)
+        self.display_surface = pygame.display.get_surface()
+
+        # camera offset 
+		self.offset = pygame.math.Vector2()
+		self.half_w = self.display_surface.get_size()[0] // 2
+		self.half_h = self.display_surface.get_size()[1] // 2
+
+"""
   
 class Bullet:
     def __init__(self, tireur):
@@ -260,36 +273,36 @@ def tryquit():
 def main_menu():
     while True:
 
-        mx, my = pygame.mouse.get_pos()
+        pos = pygame.mouse.get_pos()
 
         winsize()
 
         button_x = ws // 2
         button_y = hs // 2
 
-        fond = image.Image(ws // 2, hs // 2, "fond.png", (ws,hs))
-        fond.draw(screen)
+        fond = image.Image(ws // 2, hs // 2, "fond.png", (ws,hs), screen)
         
-        play_button = button.Button(button_x, button_y +50, "play.png", (button_width,button_height))
-        if play_button.draw(screen):
-            game()
+        play_button = button.Button(button_x, button_y +50, "play.png", (button_width,button_height), screen)
 
-        quit_button = button.Button(button_x, button_y +250, "quit.png", (button_width,button_height))
-        if quit_button.draw(screen):
-            tryquit()
+        quit_button = button.Button(button_x, button_y +250, "quit.png", (button_width,button_height), screen)
 
-        settings_button = button.Button(50, 50, "settings.png", (75, 75))
-        if settings_button.draw(screen):
-            set_menu()
+        settings_button = button.Button(50, 50, "settings.png", (75, 75), screen)
 
-        logo = image.Image(ws // 2, hs // 5, "logo.png", (300,300))
-        logo.draw(screen)
+        logo = image.Image(ws // 2, hs // 5, "logo.png", (300,300), screen)
         
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                if play_button.rect.collidepoint(pos):
+                    game()
+                if quit_button.rect.collidepoint(pos):
+                    tryquit()
+                if settings_button.rect.collidepoint(pos):
+                    set_menu()
+
 
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_f:
@@ -306,37 +319,37 @@ def main_menu():
 
 def pause_menu():
     while True:
+        pos = pygame.mouse.get_pos()
 
-        fondp = image.Image(ws // 2, hs // 2, "fondp.jpg", (ws,hs))
-        fondp.draw(screen)
 
-        pause = image.Image(ws // 2, hs // 4, "pause.png", (text_width,text_height))
-        pause.draw(screen)
+        fondp = image.Image(ws // 2, hs // 2, "fondp.jpg", (ws,hs), screen)
 
-        mx, my = pygame.mouse.get_pos()
+        pause = image.Image(ws // 2, hs // 4, "pause.png", (text_width,text_height), screen)
 
         winsize()
 
         button_x = ws // 2
         button_y = hs // 2
 
-        resume_button = button.Button(button_x, button_y +50, "resume.png", (button_width,button_height))
-        if resume_button.draw(screen):
-            game()
+        resume_button = button.Button(button_x, button_y +50, "resume.png", (button_width,button_height), screen)
 
-        menu_button = button.Button(button_x, button_y +250, "menu.png", (button_width,button_height))
-        if menu_button.draw(screen):
-            main_menu()
+        menu_button = button.Button(button_x, button_y +250, "menu.png", (button_width,button_height), screen)
 
-        settings_button = button.Button(50, 50, "settings.png", (75, 75))
-        if settings_button.draw(screen):
-            set_jeu()
+        settings_button = button.Button(50, 50, "settings.png", (75, 75), screen)
+
 
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                if resume_button.rect.collidepoint(pos):
+                    game()
+                if menu_button.rect.collidepoint(pos):
+                    main_menu()
+                if settings_button.rect.collidepoint(pos):
+                    set_jeu()
 
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_ESCAPE:
@@ -352,7 +365,7 @@ def pause_menu():
 def set_jeu():
     while True:
 
-        mx, my = pygame.mouse.get_pos()
+        pos = pygame.mouse.get_pos()
 
         winsize()
 
@@ -362,44 +375,32 @@ def set_jeu():
         button_x = ws // 2
         button_y = hs // 2
 
-        setfond = image.Image(ws // 2, hs // 2, "setfond.png", (ws,hs))
-        setfond.draw(screen)
-        
-        settingst = image.Image(ws // 2, hs // 7, "settingst.png", (text_width,text_height))
-        settingst.draw(screen)
+        setfond = image.Image(ws // 2, hs // 2, "setfond.png", (ws,hs), screen)
+        settingst = image.Image(ws // 2, hs // 7, "settingst.png", (text_width,text_height), screen)
 
-        button_1 = button.Button(button_x -250, button_y -150, "murderb.png", (button_width,button_height))
-        if button_1.draw(screen):
-            M1.role = "Murder"
-
-        button_2 = button.Button(button_x -250, button_y, "innocentb.png", (button_width,button_height))
-        if button_2.draw(screen):
-            M1.role = "Innocent"
-
-        button_3 = button.Button(button_x -250, button_y + 150, "detectiveb.png", (button_width,button_height))
-        if button_3.draw(screen):
-            M1.role = "Détective"
-
-        button_4 = button.Button(button_x +250, button_y -150, "add.png", (button_width,button_height))
-        if button_4.draw(screen):
-            pass
-
-        button_5 = button.Button(button_x +250, button_y, "add.png", (button_width,button_height))
-        if button_5.draw(screen):
-            pass
-
-        button_6 = button.Button(button_x +250, button_y + 150, "add.png", (button_width,button_height))
-        if button_6.draw(screen):
-            pass
-
-        return_button = button.Button(button_x, button_y +300, "return.png", (button_width,button_height))
-        if return_button.draw(screen):
-            pause_menu()
+        button_1 = button.Button(button_x -250, button_y -150, "murderb.png", (button_width,button_height), screen)
+        button_2 = button.Button(button_x -250, button_y, "innocentb.png", (button_width,button_height), screen)
+        button_3 = button.Button(button_x -250, button_y + 150, "detectiveb.png", (button_width,button_height), screen)
+        button_4 = button.Button(button_x +250, button_y -150, "add.png", (button_width,button_height), screen)
+        button_5 = button.Button(button_x +250, button_y, "add.png", (button_width,button_height), screen)
+        button_6 = button.Button(button_x +250, button_y + 150, "add.png", (button_width,button_height), screen)
+        return_button = button.Button(button_x, button_y +300, "return.png", (button_width,button_height), screen)
+            
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                if button_1.rect.collidepoint(pos):
+                    M1.role = "Murder"
+                if button_2.rect.collidepoint(pos):
+                    M1.role = "Innocent"
+                if button_3.rect.collidepoint(pos):
+                    M1.role = "Détective"
+
+                if return_button.rect.collidepoint(pos):
+                    pause_menu()
 
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_ESCAPE:
@@ -413,6 +414,8 @@ def set_jeu():
 def set_menu():
     while True:
 
+        pos = pygame.mouse.get_pos()
+
         winsize()
 
         button_width = 250
@@ -421,39 +424,16 @@ def set_menu():
         button_x = ws // 2
         button_y = hs // 2
 
-        setfond = image.Image(ws // 2, hs // 2, "setfond.png", (ws,hs))
-        setfond.draw(screen)
-        
-        settingst = image.Image(ws // 2, hs // 7, "settingst.png", (text_width,text_height))
-        settingst.draw(screen)
+        setfond = image.Image(ws // 2, hs // 2, "setfond.png", (ws,hs), screen)
+        settingst = image.Image(ws // 2, hs // 7, "settingst.png", (text_width,text_height), screen)
 
-        button_1 = button.Button(button_x -250, button_y -150, "add.png", (button_width,button_height))
-        if button_1.draw(screen):
-            pass
-
-        button_2 = button.Button(button_x -250, button_y, "add.png", (button_width,button_height))
-        if button_2.draw(screen):
-            pass
-
-        button_3 = button.Button(button_x -250, button_y + 150, "add.png", (button_width,button_height))
-        if button_3.draw(screen):
-            pass
-
-        button_4 = button.Button(button_x +250, button_y -150, "add.png", (button_width,button_height))
-        if button_4.draw(screen):
-            pass
-
-        button_5 = button.Button(button_x +250, button_y, "add.png", (button_width,button_height))
-        if button_5.draw(screen):
-            pass
-
-        button_6 = button.Button(button_x +250, button_y + 150, "add.png", (button_width,button_height))
-        if button_6.draw(screen):
-            pass
-
-        return_button = button.Button(button_x, button_y + 300, "return.png", (button_width,button_height))
-        if return_button.draw(screen):
-            main_menu()
+        button_1 = button.Button(button_x -250, button_y -150, "add.png", (button_width,button_height), screen)
+        button_2 = button.Button(button_x -250, button_y, "add.png", (button_width,button_height), screen)
+        button_3 = button.Button(button_x -250, button_y + 150, "add.png", (button_width,button_height), screen)
+        button_4 = button.Button(button_x +250, button_y -150, "add.png", (button_width,button_height), screen)
+        button_5 = button.Button(button_x +250, button_y, "add.png", (button_width,button_height), screen)
+        button_6 = button.Button(button_x +250, button_y + 150, "add.png", (button_width,button_height), screen)
+        return_button = button.Button(button_x, button_y +300, "return.png", (button_width,button_height), screen)
             
         
 
@@ -461,6 +441,10 @@ def set_menu():
             if e.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()   
+
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                if return_button.rect.collidepoint(pos):
+                    main_menu()
 
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_f:
@@ -484,6 +468,7 @@ def tiled():
         if obj.type == 'Shape':
             if obj.name == 'Marker':
                 pygame.draw.circle(screen,'red',(obj.x,obj.y),5)
+                
             if obj.name == 'Rectangle':
                 rect = pygame.Rect(obj.x,obj.y,obj.width,obj.height)
                 pygame.draw.rect(screen,'yellow',rect)
@@ -512,10 +497,6 @@ def playermanage():
         
         if player.role == 'Détective':
             draw_text(str(player.bullet) + " •", pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-60)
-
-
-        #draw_text(player.role, pygame.font.Font(None, 54), BLACK, screen, ws*15 // 20, hs // 20)
-        #draw_text(str(player.bullet) + " •", pygame.font.Font(None, 54), BLACK, screen, ws*15 // 20, hs*2 // 20)
 
     for player in players:
 
@@ -577,10 +558,6 @@ def event():
                     new_bul = Bullet(player)
                     player.bullet -= 1
                     player.bulletlist.append(new_bul)
-
-                #if e.key == pygame.K_SPACE and player.role == "Murder" and player.murderstat == True:
-                    #circle = pygame.draw.circle(screen, RED, [player.x, player.y], 100, 0)
-                    #checkcollision(player, circle)
 
 
                 if e.key == pygame.K_e and player.role == "Murder":
