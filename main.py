@@ -6,7 +6,6 @@ import sys, os, math, random
 import csv
 import pygame
 from pygame.locals import *
-from pygame.sprite import Sprite
 import button, image
 import pytmx
 from pytmx.util_pygame import load_pygame
@@ -29,9 +28,6 @@ pygame.display.set_icon(icon)
 
 screen = pygame.display.set_mode((w, h))
 
-
-
-
 def winsize():
     global ws, hs
     ws, hs = screen.get_size()
@@ -48,8 +44,9 @@ class Tile(pygame.sprite.Sprite):
         self.image = surf
         self.rect = self.image.get_rect(topleft = pos)
 
-class Player():
-    def __init__(self, x, y, sx, sy, nom, speed, Ku, Kd, Kl, Kr):
+class Player(pygame.sprite.Sprite):
+    def __init__(self, x, y, sx, sy, nom, speed, Ku, Kd, Kl, Kr, groups):
+        super().__init__(groups)
         self.x = x
         self.y = y
         self.sx = sx
@@ -70,12 +67,15 @@ class Player():
         self.sector = sector
         
         
+        
         if self.role == 'Innocent':
             self.img = ino
         if self.role == 'Murder':
             self.img = ino
         if self.role == 'Détective':
             self.img = detect
+
+        self.rect = self.img.get_rect(center = (self.x,self.y))
 
 
     def choisir_role(self):
@@ -147,19 +147,25 @@ class Player():
         if self.vie <=0:
             self.etat = False
 
-"""
-class CameraGroup(pygame.sprite.Group):
 
-    def __init__(self, *sprites: Sprite | sys.Sequence[Sprite]) -> None:
-        super().__init__(*sprites)
-        self.display_surface = pygame.display.get_surface()
+class Camera(pygame.sprite.Group):
 
-        # camera offset 
-		self.offset = pygame.math.Vector2()
-		self.half_w = self.display_surface.get_size()[0] // 2
-		self.half_h = self.display_surface.get_size()[1] // 2
+    def __init__(self):
+        super().__init__()
+        self.offset = pygame.math.Vector2()
+        self.floor_rect = pygame.Rect(0, 0, TILESIZE, TILESIZE)
 
-"""
+    def custom_draw(self, player):
+        self.offset.x = player.rect.centerx - ws // 2 
+        self.offset.y = player.rect.centery - hs // 2 
+
+        floor_offset_pos = self.floor_rect.topleft - self.offset
+        screen.blit(allspritegroup, floor_offset_pos)
+
+        for sprite in allspritegroup:
+            offset_pos = sprite.rect.topleft - self.offset
+            screen.blit(sprite.image, offset_pos)
+
   
 class Bullet:
     def __init__(self, tireur):
@@ -193,7 +199,7 @@ class Bullet:
 #-------------------------------TILED-----------------------------
 
 tmx_data = load_pygame(os.path.join("assets", "map.tmx"))
-sprite_group = pygame.sprite.Group()
+map_group = pygame.sprite.Group()
 
 # cycle through all layers
 for layer in tmx_data.visible_layers:
@@ -201,12 +207,12 @@ for layer in tmx_data.visible_layers:
     if hasattr(layer,'data'):
         for x,y,surf in layer.tiles():
             pos = (x * 128, y * 128)
-            Tile(pos = pos, surf = surf, groups = sprite_group)
+            Tile(pos = pos, surf = surf, groups = map_group)
  
 for obj in tmx_data.objects:
     pos = obj.x,obj.y
     if obj.type in ('Building', 'Vegetation'):
-        Tile(pos = pos, surf = obj.image, groups = sprite_group)
+        Tile(pos = pos, surf = obj.image, groups = map_group)
  
 #-------------------------------VARIABLE-----------------------------
 
@@ -220,6 +226,7 @@ YELLOW = (255, 255, 0)
 CYAN = (0, 255, 255)
 MAGENTA = (255, 0, 255)
 
+TILESIZE = 35*128
 
 button_width = 375
 button_height = 150
@@ -229,9 +236,7 @@ text_height = 200
 
 
 ino = pygame.image.load(os.path.join("assets", "ino.png"))
-
 detect = pygame.image.load(os.path.join("assets", "detect.png"))
-
 murder = pygame.image.load(os.path.join("assets", "murder.png"))
 
 sector = pygame.image.load(os.path.join("assets", "sector.png"))
@@ -239,13 +244,16 @@ sector = pygame.transform.scale(sector, (100, 100))
 sector  = pygame.transform.rotate(sector, 300)
 
 
-players = []
+players_group = pygame.sprite.Group()
 
-M1 = Player(ws*5 // 20, hs*4 // 20, 100, 100, "Murder1", 5,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d)
-M2 = Player(ws*15 // 20, hs*4 // 20, 100, 100, "Murder2", 5, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT )
-players.append(M1)
-players.append(M2)
+M1 = Player(ws*5 // 20, hs*4 // 20, 100, 100, "Murder1", 5,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d, players_group)
+M2 = Player(ws*15 // 20, hs*4 // 20, 100, 100, "Murder2", 5, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT, players_group)
 
+C1 = Camera()
+
+allspritegroup = pygame.sprite.Group()
+allspritegroup.add(players_group)
+allspritegroup.add(map_group)
 
 #-------------------------------OTHER FUNCTION-----------------------------
 
@@ -461,8 +469,10 @@ def set_menu():
 
 
 def tiled():
-    sprite_group.draw(screen)
-    
+    map_group.draw(screen)
+
+
+"""
     for obj in tmx_data.objects:
         pos = obj.x,obj.y
         if obj.type == 'Shape':
@@ -480,25 +490,24 @@ def tiled():
             if obj.name == 'Polygon':
                 points = [(point.x,point.y) for point in obj.points]
                 pygame.draw.polygon(screen,'green',points)
-
+"""
 
 def checkalive():
-    for player in players:
+    for player in players_group:
         if player.etat == False:
-        
-            players.remove(player)
+            players_group.remove(player)
 
 
 def playermanage():
-    
+    C1.custom_draw(M1)
 
-    for player in players:
+    for player in players_group:
         draw_text(player.role, pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-80)
         
         if player.role == 'Détective':
             draw_text(str(player.bullet) + " •", pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-60)
 
-    for player in players:
+    for player in players_group:
 
         player.update()
         player.orientation()
@@ -509,7 +518,7 @@ def playermanage():
 
 def checkcollision(p1, c1):
 
-    otherplayer = players.copy()
+    otherplayer = players_group.copy()
     otherplayer.remove(p1)
     for player in otherplayer:
         # Calculer la distance entre le centre du cercle et le bord le plus proche du rectangle
@@ -522,13 +531,13 @@ def checkcollision(p1, c1):
 
 
 def bulletsmanage():
-    for player in players:
+    for player in players_group:
         for bullet in player.bulletlist:
 
             bullet.draw()
             bullet.move() 
 
-            otherplayer = players.copy()
+            otherplayer = players_group.copy()
             otherplayer.remove(player)
             
             for player2 in otherplayer:
@@ -553,7 +562,7 @@ def event():
                 pause_menu()
 
 
-            for player in players:
+            for player in players_group:
                 if e.key == pygame.K_SPACE and player.role == 'Détective' and player.bullet > 0:
                     new_bul = Bullet(player)
                     player.bullet -= 1
