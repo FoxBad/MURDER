@@ -75,6 +75,9 @@ class Player(pygame.sprite.Sprite):
         if self.role == 'Détective':
             self.img = detect
 
+
+
+
         self.rect = self.img.get_rect(center = (self.x,self.y))
 
 
@@ -85,8 +88,14 @@ class Player(pygame.sprite.Sprite):
         return role
 
     def update(self):
-        
+
+        self.x2 = self.x
+        self.y2 = self.y
+
+
         self.img = pygame.transform.scale(self.img, (self.sx, self.sy))
+
+        
         keys = pygame.key.get_pressed()
         if keys[self.Kl]:
             self.x -= self.speed
@@ -96,6 +105,16 @@ class Player(pygame.sprite.Sprite):
             self.y -= self.speed 
         if keys[self.Kd]:
             self.y += self.speed
+
+
+        for player in players_group:
+            if check_collision_for_layer(player):
+                self.x = self.x2
+                self.y = self.y2
+
+        
+
+
         
     def orientation(self):
 
@@ -133,6 +152,7 @@ class Player(pygame.sprite.Sprite):
 
     def innocent(self):
         if self.role == 'Innocent':
+
             self.murder == False
             self.img = ino
 
@@ -153,16 +173,18 @@ class Camera(pygame.sprite.Group):
     def __init__(self):
         super().__init__()
         self.offset = pygame.math.Vector2()
-        self.floor_rect = pygame.Rect(0, 0, TILESIZE, TILESIZE)
+        self.floor_rect = pygame.Rect(0, 0, 4400, 4400)
 
     def custom_draw(self, player):
         self.offset.x = player.rect.centerx - ws // 2 
         self.offset.y = player.rect.centery - hs // 2 
 
         floor_offset_pos = self.floor_rect.topleft - self.offset
-        screen.blit(allspritegroup, floor_offset_pos)
 
-        for sprite in allspritegroup:
+        for tiles in map_group:
+            screen.blit(tiles.draw(screen), floor_offset_pos)
+
+        for sprite in players_group:
             offset_pos = sprite.rect.topleft - self.offset
             screen.blit(sprite.image, offset_pos)
 
@@ -226,8 +248,6 @@ YELLOW = (255, 255, 0)
 CYAN = (0, 255, 255)
 MAGENTA = (255, 0, 255)
 
-TILESIZE = 35*128
-
 button_width = 375
 button_height = 150
 
@@ -236,6 +256,8 @@ text_height = 200
 
 
 ino = pygame.image.load(os.path.join("assets", "ino.png"))
+inogold = pygame.image.load(os.path.join("assets", "inogold.png"))
+
 detect = pygame.image.load(os.path.join("assets", "detect.png"))
 murder = pygame.image.load(os.path.join("assets", "murder.png"))
 
@@ -243,17 +265,10 @@ sector = pygame.image.load(os.path.join("assets", "sector.png"))
 sector = pygame.transform.scale(sector, (100, 100))
 sector  = pygame.transform.rotate(sector, 300)
 
-
 players_group = pygame.sprite.Group()
 
 M1 = Player(ws*5 // 20, hs*4 // 20, 100, 100, "Murder1", 5,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d, players_group)
-M2 = Player(ws*15 // 20, hs*4 // 20, 100, 100, "Murder2", 5, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT, players_group)
-
-C1 = Camera()
-
-allspritegroup = pygame.sprite.Group()
-allspritegroup.add(players_group)
-allspritegroup.add(map_group)
+#M2 = Player(ws*15 // 20, hs*4 // 20, 100, 100, "Murder2", 5, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT, players_group)
 
 #-------------------------------OTHER FUNCTION-----------------------------
 
@@ -472,6 +487,45 @@ def tiled():
     map_group.draw(screen)
 
 
+def check_collision_for_layer(element):
+
+    # Convert visible_layers generator to a list
+    visible_layers = list(tmx_data.visible_layers)
+
+    # Check if layer_index is valid
+    if 1 < 0 or 1 >= len(visible_layers):
+        print("Invalid layer index")
+        return
+
+    layer = visible_layers[1]
+
+    # Check if the layer has 'data' attribute
+    if not hasattr(layer, 'data'):
+        print("Layer does not contain tile data")
+        return
+
+    for surf in layer.tiles():
+        # Call checkcollision() function with tile coordinates
+        if checkcollision(surf, element):
+            return True
+
+
+
+# Function to be implemented
+def checkcollision(surf, element):
+
+    x = surf[0]*128
+    y = surf[1]*128
+
+    surfrect = surf[2].get_rect(topleft = (x, y))
+    #pygame.draw.rect(screen, BLACK, surfrect)
+
+    collide = pygame.Rect.colliderect(element.rect, surfrect)
+    if collide:
+        return True
+
+
+
 """
     for obj in tmx_data.objects:
         pos = obj.x,obj.y
@@ -499,7 +553,6 @@ def checkalive():
 
 
 def playermanage():
-    C1.custom_draw(M1)
 
     for player in players_group:
         draw_text(player.role, pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-80)
@@ -516,7 +569,7 @@ def playermanage():
         player.detective()
             
 
-def checkcollision(p1, c1):
+def checkcollision2(p1, c1):
 
     otherplayer = players_group.copy()
     otherplayer.remove(p1)
@@ -534,6 +587,7 @@ def bulletsmanage():
     for player in players_group:
         for bullet in player.bulletlist:
 
+
             bullet.draw()
             bullet.move() 
 
@@ -542,10 +596,13 @@ def bulletsmanage():
             
             for player2 in otherplayer:
                 if bullet.rect.colliderect(player2.rect):
-                    player.bulletlist.remove(bullet)
+                    
                     player2.perdre_vie()
 
             if bullet.x < 0 or bullet.x > info.current_w or bullet.y < 0 or bullet.y > info.current_h:
+                player.bulletlist.remove(bullet)
+
+            if check_collision_for_layer(bullet):
                 player.bulletlist.remove(bullet)
 
 
