@@ -76,8 +76,6 @@ class Player(pygame.sprite.Sprite):
             self.img = detect
 
 
-
-
         self.rect = self.img.get_rect(center = (self.x,self.y))
 
 
@@ -88,10 +86,6 @@ class Player(pygame.sprite.Sprite):
         return role
 
     def update(self):
-
-        self.x2 = self.x
-        self.y2 = self.y
-
 
         self.img = pygame.transform.scale(self.img, (self.sx, self.sy))
 
@@ -105,17 +99,29 @@ class Player(pygame.sprite.Sprite):
             self.y -= self.speed 
         if keys[self.Kd]:
             self.y += self.speed
-
-
+     
         for player in players_group:
             if check_collision_for_layer(player):
-                self.x = self.x2
-                self.y = self.y2
+                if self.speed != 0:
+                    if self.speed > 0:
+                        print("hee")
+                        
+                        # Le joueur se déplace vers la droite
+                        player.rect.right = surfrect.left  # Ajuste la position du joueur à gauche du tile
+                    else:
+                        # Le joueur se déplace vers la gauche
+                        player.rect.left = surfrect.right  # Ajuste la position du joueur à droite du tile
+                # Si le joueur se déplace verticalement (vers le haut ou le bas)
+                if self.speed != 0:
+                    if self.speed > 0:
+                        print("hee")
+                        # Le joueur se déplace vers le bas
+                        print(player.rect.bottom, surfrect.top)
+                        player.rect.bottom = surfrect.top  # Ajuste la position du joueur au-dessus du tile
+                    else:
+                        # Le joueur se déplace vers le haut
+                        player.rect.top = surfrect.bottom
 
-        
-
-
-        
     def orientation(self):
 
         pos = pygame.mouse.get_pos()
@@ -126,10 +132,10 @@ class Player(pygame.sprite.Sprite):
         angle = math.degrees(math.atan2(y_dist, x_dist))
     
         image  = pygame.transform.rotate(self.img, angle)
-        rect  = image.get_rect(center = (self.x, self.y))
+        self.rect2  = image.get_rect(center = (self.x, self.y))
         self.rect = pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
 
-        screen.blit(image, rect)
+        screen.blit(image, self.rect2)
     
     def murder(self):
 
@@ -513,7 +519,7 @@ def check_collision_for_layer(element):
 
 # Function to be implemented
 def checkcollision(surf, element):
-
+    global surfrect
     x = surf[0]*128
     y = surf[1]*128
 
@@ -523,6 +529,7 @@ def checkcollision(surf, element):
     collide = pygame.Rect.colliderect(element.rect, surfrect)
     if collide:
         return True
+
 
 
 
