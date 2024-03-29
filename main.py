@@ -90,6 +90,8 @@ class Player(pygame.sprite.Sprite):
         self.img = pygame.transform.scale(self.img, (self.sx, self.sy))
 
         
+        self.x2, self.y2 = self.x, self.y
+
         keys = pygame.key.get_pressed()
         if keys[self.Kl]:
             self.x -= self.speed
@@ -99,28 +101,31 @@ class Player(pygame.sprite.Sprite):
             self.y -= self.speed 
         if keys[self.Kd]:
             self.y += self.speed
-     
+
+
+        self.dx, self.dy = self.x-self.x2, self.y-self.y2
+
+        print(self.dx, self.dy)
         for player in players_group:
-            if check_collision_for_layer(player):
-                if self.speed != 0:
-                    if self.speed > 0:
-                        print("hee")
-                        
-                        # Le joueur se déplace vers la droite
-                        player.rect.right = surfrect.left  # Ajuste la position du joueur à gauche du tile
+            for surf in layer1:
+                if checkcollision(player, layer1):
+                    if self.dx > 0:
+                        # Le joueur se déplace vers la droite                    
+                        player.rect.right = surf.rect.left  # Ajuste la position du joueur à gauche du tile
                     else:
                         # Le joueur se déplace vers la gauche
-                        player.rect.left = surfrect.right  # Ajuste la position du joueur à droite du tile
-                # Si le joueur se déplace verticalement (vers le haut ou le bas)
-                if self.speed != 0:
-                    if self.speed > 0:
-                        print("hee")
+                        player.rect.left = surf.rect.right  # Ajuste la position du joueur à droite du tile
+                    # Si le joueur se déplace verticalement (vers le haut ou le bas)
+
+                    if self.dy > 0:
+
                         # Le joueur se déplace vers le bas
-                        print(player.rect.bottom, surfrect.top)
-                        player.rect.bottom = surfrect.top  # Ajuste la position du joueur au-dessus du tile
+                        player.rect.bottom = surf.rect.top  # Ajuste la position du joueur au-dessus du tile
+                        
                     else:
                         # Le joueur se déplace vers le haut
-                        player.rect.top = surfrect.bottom
+                        player.rect.top = surf.rect.bottom
+                    
 
     def orientation(self):
 
@@ -133,7 +138,8 @@ class Player(pygame.sprite.Sprite):
     
         image  = pygame.transform.rotate(self.img, angle)
         self.rect2  = image.get_rect(center = (self.x, self.y))
-        self.rect = pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
+        self.rect = pygame.draw.rect(screen, BLACK, pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy))
+        #self.rect = pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
 
         screen.blit(image, self.rect2)
     
@@ -142,7 +148,7 @@ class Player(pygame.sprite.Sprite):
 
         """
         if self.murderstat == True and self.role == "Murder":
-            
+             
             pos = pygame.mouse.get_pos()
 
             x_dist = pos[0] - self.x
@@ -272,6 +278,8 @@ sector = pygame.transform.scale(sector, (100, 100))
 sector  = pygame.transform.rotate(sector, 300)
 
 players_group = pygame.sprite.Group()
+layer1 = pygame.sprite.Group()
+
 
 M1 = Player(ws*5 // 20, hs*4 // 20, 100, 100, "Murder1", 5,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d, players_group)
 #M2 = Player(ws*15 // 20, hs*4 // 20, 100, 100, "Murder2", 5, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT, players_group)
@@ -493,7 +501,7 @@ def tiled():
     map_group.draw(screen)
 
 
-def check_collision_for_layer(element):
+def l1g():
 
     # Convert visible_layers generator to a list
     visible_layers = list(tmx_data.visible_layers)
@@ -511,29 +519,33 @@ def check_collision_for_layer(element):
         return
 
     for surf in layer.tiles():
-        # Call checkcollision() function with tile coordinates
-        if checkcollision(surf, element):
+        print(surf[2])
+        layer1.add(surf[2])
+
+
+def checkcollision(element, group):
+    for surf in group:
+        collide = pygame.Rect.colliderect(element.rect, surf[2].rect)
+        if collide:
             return True
 
 
-
-# Function to be implemented
-def checkcollision(surf, element):
-    global surfrect
-    x = surf[0]*128
-    y = surf[1]*128
-
-    surfrect = surf[2].get_rect(topleft = (x, y))
-    #pygame.draw.rect(screen, BLACK, surfrect)
-
-    collide = pygame.Rect.colliderect(element.rect, surfrect)
-    if collide:
-        return True
-
-
-
-
 """
+def checkcollision2(p1, c1):
+
+    otherplayer = players_group.copy()
+    otherplayer.remove(p1)
+    for player in otherplayer:
+        # Calculer la distance entre le centre du cercle et le bord le plus proche du rectangle
+        distance_x = abs(c1.centerx - player.rect.centerx) - player.rect.width / 2
+        distance_y = abs(c1.centery - player.rect.centery) - player.rect.height / 2
+
+        # Déterminer s'il y a collision
+        if distance_x ** 2 + distance_y ** 2 <= 100 ** 2:
+            player.perdre_vie()
+
+        
+
     for obj in tmx_data.objects:
         pos = obj.x,obj.y
         if obj.type == 'Shape':
@@ -576,18 +588,7 @@ def playermanage():
         player.detective()
             
 
-def checkcollision2(p1, c1):
 
-    otherplayer = players_group.copy()
-    otherplayer.remove(p1)
-    for player in otherplayer:
-        # Calculer la distance entre le centre du cercle et le bord le plus proche du rectangle
-        distance_x = abs(c1.centerx - player.rect.centerx) - player.rect.width / 2
-        distance_y = abs(c1.centery - player.rect.centery) - player.rect.height / 2
-
-        # Déterminer s'il y a collision
-        if distance_x ** 2 + distance_y ** 2 <= 100 ** 2:
-            player.perdre_vie()
 
 
 def bulletsmanage():
@@ -609,7 +610,7 @@ def bulletsmanage():
             if bullet.x < 0 or bullet.x > info.current_w or bullet.y < 0 or bullet.y > info.current_h:
                 player.bulletlist.remove(bullet)
 
-            if check_collision_for_layer(bullet):
+            if checkcollision(bullet, layer1):
                 player.bulletlist.remove(bullet)
 
 
@@ -651,6 +652,7 @@ def game():
         
         event()
         tiled()
+        l1g()
         checkalive()
         playermanage()
         bulletsmanage()
