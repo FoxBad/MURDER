@@ -9,6 +9,7 @@ from pygame.locals import *
 import button, image
 import pytmx
 from pytmx.util_pygame import load_pygame
+from pygame import Vector2
 
 
 #-------------------------------INIT-----------------------------
@@ -61,6 +62,8 @@ class Player(pygame.sprite.Sprite):
         self.Kr = Kr
         self.bulletlist = []
         self.bullet = 3
+
+
                
 
         if self.role == 'Innocent':
@@ -116,26 +119,51 @@ class Player(pygame.sprite.Sprite):
 
         screen.blit(self.image, self.rectangle)
 
-    
 
 
     def murder(self):
-        pass
+        if self.role == 'Murder' and self.murderstat == True:
+            self.vect = pygame.Vector2((self.x, self.y))
+            self.sector = Sector(self.vect)
+            self.sector.update()
 
     def innocent(self):
         if self.role == 'Innocent':
-            self.murder == False
+            self.murderstat == False
             self.base_img = ino
 
     def detective(self):
         if self.role == 'Détective':
-            self.murder == False
+            self.murderstat == False
             self.base_img = detect
 
     def perdre_vie(self):
         self.vie -= 1
         if self.vie <=0:
             self.etat = False
+
+class Sector:
+    def __init__(self, pivot):
+        self.pivot = pivot
+        
+        self.pos = pivot + (70, 0)
+
+        self.image_orig = sector
+
+        self.image = self.image_orig
+        self.rect = self.image.get_rect(center = self.pos)
+
+        
+    def update(self):
+        
+        mouse_pos = Vector2(pygame.mouse.get_pos())
+        
+        mouse_offset = mouse_pos - self.pivot
+        mouse_angle = -math.degrees(math.atan2(mouse_offset.y, mouse_offset.x))
+        
+        self.image, self.rect = rotate_on_pivot(self.image_orig, mouse_angle, self.pivot, self.pos)
+    
+        screen.blit(self.image, self.rect)
 
 
 class Camera(pygame.sprite.Group):
@@ -232,8 +260,8 @@ detect = pygame.image.load(os.path.join("assets", "detect.png"))
 murder = pygame.image.load(os.path.join("assets", "murder.png"))
 
 sector = pygame.image.load(os.path.join("assets", "sector.png"))
-sector = pygame.transform.scale(sector, (100, 100))
-sector  = pygame.transform.rotate(sector, 300)
+sector = pygame.transform.scale(sector, (200, 200))
+sector  = pygame.transform.rotate(sector, 290)
 
 players_group = pygame.sprite.Group()
 layer1 = []
@@ -261,6 +289,14 @@ def tryquit():
     pygame.quit()
     sys.exit()
 
+def rotate_on_pivot(image, angle, pivot, origin):
+    
+    surf = pygame.transform.rotate(image, angle)
+    
+    offset = pivot + (origin - pivot).rotate(-angle)
+    rect = surf.get_rect(center = offset)
+    
+    return surf, rect
 
 
 #-------------------------------MAIN MENU-----------------------------
@@ -501,12 +537,12 @@ def playermanage():
             draw_text(str(player.bullet) + " •", pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-60)
 
     for player in players_group:
-
-        player.update()
-        player.orientation()
         player.murder() 
         player.innocent()
         player.detective()
+        player.update()
+        player.orientation()
+
             
 
 
