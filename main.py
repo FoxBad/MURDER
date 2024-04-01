@@ -12,10 +12,9 @@ from pytmx.util_pygame import load_pygame
 
 
 #-------------------------------INIT-----------------------------
-
 pygame.init()
 
-fps = 60
+fps = 500
 fpsClock = pygame.time.Clock()
 
 info = pygame.display.Info()
@@ -66,17 +65,13 @@ class Player(pygame.sprite.Sprite):
         self.destx, self.desty = pygame.mouse.get_pos()
         self.sector = sector
         
-        
-        
+
         if self.role == 'Innocent':
             self.img = ino
         if self.role == 'Murder':
             self.img = ino
         if self.role == 'Détective':
             self.img = detect
-
-
-        self.rect = self.img.get_rect(center = (self.x,self.y))
 
 
     def choisir_role(self):
@@ -89,10 +84,13 @@ class Player(pygame.sprite.Sprite):
 
         self.img = pygame.transform.scale(self.img, (self.sx, self.sy))
 
-        
-        self.x2, self.y2 = self.x, self.y
+        #self.rect = pygame.draw.rect(screen, BLACK, self.img.get_rect(center = (self.x,self.y)))
 
         keys = pygame.key.get_pressed()
+
+        prev_x, prev_y = self.x, self.y
+
+        
         if keys[self.Kl]:
             self.x -= self.speed
         if keys[self.Kr]:
@@ -103,29 +101,15 @@ class Player(pygame.sprite.Sprite):
             self.y += self.speed
 
 
-        self.dx, self.dy = self.x-self.x2, self.y-self.y2
+        self.rect = pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
 
-        print(self.dx, self.dy)
-        for player in players_group:
-            for surf in layer1:
-                if checkcollision(player, layer1):
-                    if self.dx > 0:
-                        # Le joueur se déplace vers la droite                    
-                        player.rect.right = surf.rect.left  # Ajuste la position du joueur à gauche du tile
-                    else:
-                        # Le joueur se déplace vers la gauche
-                        player.rect.left = surf.rect.right  # Ajuste la position du joueur à droite du tile
-                    # Si le joueur se déplace verticalement (vers le haut ou le bas)
+        for rect in layer1:
+            if self.rect.colliderect(rect):
 
-                    if self.dy > 0:
+                self.x, self.y = prev_x, prev_y
+        
 
-                        # Le joueur se déplace vers le bas
-                        player.rect.bottom = surf.rect.top  # Ajuste la position du joueur au-dessus du tile
-                        
-                    else:
-                        # Le joueur se déplace vers le haut
-                        player.rect.top = surf.rect.bottom
-                    
+        
 
     def orientation(self):
 
@@ -137,34 +121,18 @@ class Player(pygame.sprite.Sprite):
         angle = math.degrees(math.atan2(y_dist, x_dist))
     
         image  = pygame.transform.rotate(self.img, angle)
-        self.rect2  = image.get_rect(center = (self.x, self.y))
-        self.rect = pygame.draw.rect(screen, BLACK, pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy))
+        self.rectangle  = image.get_rect(center = (self.x, self.y))
         #self.rect = pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
 
-        screen.blit(image, self.rect2)
+        screen.blit(image, self.rectangle)
     
+
+
     def murder(self):
-
-
-        """
-        if self.murderstat == True and self.role == "Murder":
-             
-            pos = pygame.mouse.get_pos()
-
-            x_dist = pos[0] - self.x
-            y_dist = -(pos[1] - self.y)
-        
-            angle = math.degrees(math.atan2(y_dist, x_dist))
-    
-            image  = pygame.transform.rotate(self.sector, angle)
-            rect = image.get_rect(center=(self.x - math.sin(math.radians(angle)), self.y - math.cos(math.radians(angle))))
-
-            screen.blit(image, rect)
-            """         
+        pass
 
     def innocent(self):
         if self.role == 'Innocent':
-
             self.murder == False
             self.img = ino
 
@@ -175,7 +143,6 @@ class Player(pygame.sprite.Sprite):
 
     def perdre_vie(self):
         self.vie -= 1
-
         if self.vie <=0:
             self.etat = False
 
@@ -278,7 +245,7 @@ sector = pygame.transform.scale(sector, (100, 100))
 sector  = pygame.transform.rotate(sector, 300)
 
 players_group = pygame.sprite.Group()
-layer1 = pygame.sprite.Group()
+layer1 = []
 
 
 M1 = Player(ws*5 // 20, hs*4 // 20, 100, 100, "Murder1", 5,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d, players_group)
@@ -519,51 +486,14 @@ def l1g():
         return
 
     for surf in layer.tiles():
-        print(surf[2])
-        layer1.add(surf[2])
-
-
-def checkcollision(element, group):
-    for surf in group:
-        collide = pygame.Rect.colliderect(element.rect, surf[2].rect)
-        if collide:
-            return True
-
-
-"""
-def checkcollision2(p1, c1):
-
-    otherplayer = players_group.copy()
-    otherplayer.remove(p1)
-    for player in otherplayer:
-        # Calculer la distance entre le centre du cercle et le bord le plus proche du rectangle
-        distance_x = abs(c1.centerx - player.rect.centerx) - player.rect.width / 2
-        distance_y = abs(c1.centery - player.rect.centery) - player.rect.height / 2
-
-        # Déterminer s'il y a collision
-        if distance_x ** 2 + distance_y ** 2 <= 100 ** 2:
-            player.perdre_vie()
-
         
+        surfrect = surf[2].get_rect(topleft=(surf[0]*128, surf[1]*128))
 
-    for obj in tmx_data.objects:
-        pos = obj.x,obj.y
-        if obj.type == 'Shape':
-            if obj.name == 'Marker':
-                pygame.draw.circle(screen,'red',(obj.x,obj.y),5)
-                
-            if obj.name == 'Rectangle':
-                rect = pygame.Rect(obj.x,obj.y,obj.width,obj.height)
-                pygame.draw.rect(screen,'yellow',rect)
- 
-            if obj.name == 'Ellipse':
-                rect = pygame.Rect(obj.x,obj.y,obj.width,obj.height)
-                pygame.draw.ellipse(screen,'blue',rect)
- 
-            if obj.name == 'Polygon':
-                points = [(point.x,point.y) for point in obj.points]
-                pygame.draw.polygon(screen,'green',points)
-"""
+        layer1.append(surfrect)
+
+
+l1g()
+
 
 def checkalive():
     for player in players_group:
@@ -583,7 +513,7 @@ def playermanage():
 
         player.update()
         player.orientation()
-        player.murder()
+        player.murder() 
         player.innocent()
         player.detective()
             
@@ -610,8 +540,9 @@ def bulletsmanage():
             if bullet.x < 0 or bullet.x > info.current_w or bullet.y < 0 or bullet.y > info.current_h:
                 player.bulletlist.remove(bullet)
 
-            if checkcollision(bullet, layer1):
-                player.bulletlist.remove(bullet)
+            for rect in layer1:
+                if bullet.rect.colliderect(rect):
+                    player.bulletlist.remove(bullet)
 
 
 
@@ -648,16 +579,14 @@ def game():
     running = True
     while running:
         screen.fill(WHITE)
-
         
-        event()
         tiled()
-        l1g()
         checkalive()
         playermanage()
         bulletsmanage()
         winsize()
-    
+
+        event()
         pygame.display.flip()
         fpsClock.tick(fps)
 
