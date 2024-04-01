@@ -44,13 +44,12 @@ class Tile(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft = pos)
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y, sx, sy, nom, speed, Ku, Kd, Kl, Kr, groups):
+    def __init__(self, x, y, sx, sy, speed, Ku, Kd, Kl, Kr, groups):
         super().__init__(groups)
         self.x = x
         self.y = y
         self.sx = sx
-        self.sy = sy
-        self.nom = nom      
+        self.sy = sy 
         self.vie = 1
         self.etat = True
         self.speed = speed
@@ -62,29 +61,25 @@ class Player(pygame.sprite.Sprite):
         self.Kr = Kr
         self.bulletlist = []
         self.bullet = 3
-        self.destx, self.desty = pygame.mouse.get_pos()
-        self.sector = sector
-        
+               
 
         if self.role == 'Innocent':
-            self.img = ino
+            self.base_img = ino
         if self.role == 'Murder':
-            self.img = ino
+            self.base_img = ino
         if self.role == 'Détective':
-            self.img = detect
+            self.base_img = detect
 
 
     def choisir_role(self):
         roles = ['Innocent', "Murder", 'Détective']
-        poids_roles = [4, 1, 1]
+        poids_roles = [10, 1, 1]
         role = random.choices(roles, weights=poids_roles, k=1)[0]
         return role
 
     def update(self):
 
-        self.img = pygame.transform.scale(self.img, (self.sx, self.sy))
-
-        #self.rect = pygame.draw.rect(screen, BLACK, self.img.get_rect(center = (self.x,self.y)))
+        self.image = pygame.transform.scale(self.base_img, (self.sx, self.sy))
 
         keys = pygame.key.get_pressed()
 
@@ -109,22 +104,18 @@ class Player(pygame.sprite.Sprite):
                 self.x, self.y = prev_x, prev_y
         
 
-        
-
     def orientation(self):
 
+
         pos = pygame.mouse.get_pos()
+        self.x_dist = pos[0] - self.x
+        self.y_dist = -(pos[1] - self.y)
+        self.angle = math.degrees(math.atan2(self.y_dist, self.x_dist))
+        self.image  = pygame.transform.rotate(self.image, self.angle)
+        self.rectangle  = self.image.get_rect(center = (self.x, self.y))
 
-        x_dist = pos[0] - self.x
-        y_dist = -(pos[1] - self.y)
-        
-        angle = math.degrees(math.atan2(y_dist, x_dist))
-    
-        image  = pygame.transform.rotate(self.img, angle)
-        self.rectangle  = image.get_rect(center = (self.x, self.y))
-        #self.rect = pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
+        screen.blit(self.image, self.rectangle)
 
-        screen.blit(image, self.rectangle)
     
 
 
@@ -134,12 +125,12 @@ class Player(pygame.sprite.Sprite):
     def innocent(self):
         if self.role == 'Innocent':
             self.murder == False
-            self.img = ino
+            self.base_img = ino
 
     def detective(self):
         if self.role == 'Détective':
             self.murder == False
-            self.img = detect
+            self.base_img = detect
 
     def perdre_vie(self):
         self.vie -= 1
@@ -248,7 +239,7 @@ players_group = pygame.sprite.Group()
 layer1 = []
 
 
-M1 = Player(ws*5 // 20, hs*4 // 20, 100, 100, "Murder1", 5,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d, players_group)
+M1 = Player(ws*5 // 20, hs*4 // 20, 100, 100, 5,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d, players_group)
 #M2 = Player(ws*15 // 20, hs*4 // 20, 100, 100, "Murder2", 5, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT, players_group)
 
 #-------------------------------OTHER FUNCTION-----------------------------
@@ -566,11 +557,11 @@ def event():
 
 
                 if e.key == pygame.K_e and player.role == "Murder":
-                    player.img = murder
+                    player.base_img = murder
                     player.murderstat = True
                     
                 if e.key == pygame.K_r and player.role == "Murder":
-                    player.img = ino
+                    player.base_img = ino
                     player.murderstat = False
 
 
