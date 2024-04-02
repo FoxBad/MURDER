@@ -51,7 +51,7 @@ class Player(pygame.sprite.Sprite):
         self.y = y
         self.sx = sx
         self.sy = sy 
-        self.vie = 1
+        self.vie = 5
         self.etat = True
         self.speed = speed
         self.role = self.choisir_role()  # Choix aléatoire du rôle
@@ -63,15 +63,15 @@ class Player(pygame.sprite.Sprite):
         self.bulletlist = []
         self.bullet = 3
 
-
-               
-
+            
         if self.role == 'Innocent':
             self.base_img = ino
         if self.role == 'Murder':
             self.base_img = ino
         if self.role == 'Détective':
             self.base_img = detect
+
+
 
 
     def choisir_role(self):
@@ -117,6 +117,8 @@ class Player(pygame.sprite.Sprite):
         self.image  = pygame.transform.rotate(self.image, self.angle)
         self.rectangle  = self.image.get_rect(center = (self.x, self.y))
 
+        self.mask = pygame.mask.from_surface(self.base_img)
+
         screen.blit(self.image, self.rectangle)
 
 
@@ -142,16 +144,15 @@ class Player(pygame.sprite.Sprite):
         if self.vie <=0:
             self.etat = False
 
-class Sector:
+
+class Sector(pygame.sprite.Sprite):
     def __init__(self, pivot):
         self.pivot = pivot
-        
-        self.pos = pivot + (70, 0)
-
+        self.pos = pivot + (60, 0)
         self.image_orig = sector
-
         self.image = self.image_orig
         self.rect = self.image.get_rect(center = self.pos)
+
 
         
     def update(self):
@@ -162,6 +163,8 @@ class Sector:
         mouse_angle = -math.degrees(math.atan2(mouse_offset.y, mouse_offset.x))
         
         self.image, self.rect = rotate_on_pivot(self.image_orig, mouse_angle, self.pivot, self.pos)
+
+        self.mask = pygame.mask.from_surface(self.image)
     
         screen.blit(self.image, self.rect)
 
@@ -259,16 +262,16 @@ inogold = pygame.image.load(os.path.join("assets", "inogold.png"))
 detect = pygame.image.load(os.path.join("assets", "detect.png"))
 murder = pygame.image.load(os.path.join("assets", "murder.png"))
 
-sector = pygame.image.load(os.path.join("assets", "sector.png"))
+sector = pygame.image.load(os.path.join("assets", "sectore.png"))
 sector = pygame.transform.scale(sector, (200, 200))
-sector  = pygame.transform.rotate(sector, 290)
+sector  = pygame.transform.rotate(sector, 275)
 
 players_group = pygame.sprite.Group()
 layer1 = []
 
 
 M1 = Player(ws*5 // 20, hs*4 // 20, 100, 100, 5,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d, players_group)
-#M2 = Player(ws*15 // 20, hs*4 // 20, 100, 100, "Murder2", 5, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT, players_group)
+M2 = Player(ws*15 // 20, hs*4 // 20, 100, 100, 5, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT, players_group)
 
 #-------------------------------OTHER FUNCTION-----------------------------
 
@@ -530,11 +533,7 @@ def checkalive():
 
 def playermanage():
 
-    for player in players_group:
-        draw_text(player.role, pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-80)
-        
-        if player.role == 'Détective':
-            draw_text(str(player.bullet) + " •", pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-60)
+
 
     for player in players_group:
         player.murder() 
@@ -543,6 +542,13 @@ def playermanage():
         player.update()
         player.orientation()
 
+    for player in players_group:
+        draw_text(player.role, pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-80)
+
+        draw_text(str(player.vie), pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-60)
+        
+        if player.role == 'Détective':
+            draw_text(str(player.bullet) + " •", pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-60)
             
 
 
@@ -561,7 +567,6 @@ def bulletsmanage():
             
             for player2 in otherplayer:
                 if bullet.rect.colliderect(player2.rect):
-                    
                     player2.perdre_vie()
 
             if bullet.x < 0 or bullet.x > info.current_w or bullet.y < 0 or bullet.y > info.current_h:
@@ -599,6 +604,15 @@ def event():
                 if e.key == pygame.K_r and player.role == "Murder":
                     player.base_img = ino
                     player.murderstat = False
+                
+                if e.key == pygame.K_SPACE and player.role == "Murder" and player.murderstat == True:
+
+                    otherplayer = players_group.copy()
+                    otherplayer.remove(player)
+                    
+                    for player2 in otherplayer:
+                        if pygame.sprite.collide_mask(player.sector, player2):
+                            player2.perdre_vie()
 
 
 # Game loop.
