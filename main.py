@@ -65,14 +65,14 @@ class Player(pygame.sprite.Sprite):
         self.Kr = Kr
         self.bulletlist = []
         self.bullet = 3
-        self.base_img = paysant
+        self.base_img = paysan
 
 
 
 
 
     def choisir_role(self):
-        roles = ['Paysant', "Assassin", 'Mage']
+        roles = ['Paysan', "Assassin", 'Mage']
         poids_roles = [10, 1, 1]
         role = random.choices(roles, weights=poids_roles, k=1)[0]
         return role
@@ -84,6 +84,8 @@ class Player(pygame.sprite.Sprite):
         keys = pygame.key.get_pressed()
 
         prev_x, prev_y = self.x, self.y
+
+
 
                 
         
@@ -99,12 +101,29 @@ class Player(pygame.sprite.Sprite):
 
         velx, vely = self.x - prev_x, self.y - prev_y
 
+
+
+            
         self.rect = pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
         #self.rect = pygame.draw.rect(screen, BLACK, pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
         
+
         for sprite in layer2_group:
             if pygame.sprite.collide_rect(sprite, self):
                 self.x, self.y = prev_x, prev_y
+        """
+        
+            if vely > 0:
+                self.temprect = self.rect
+                self.temprect.y += self.vel
+
+                if sprite.rect.colliderect(self.temprect):
+                    self.vel = sprite.rect.top - self.rect.bottom
+
+                else:
+                    self.vel = 2
+
+        """
 
     def orientation(self):
 
@@ -127,8 +146,8 @@ class Player(pygame.sprite.Sprite):
             self.sector = Sector(self.vect)
             self.sector.update()
 
-    def Paysant(self):
-        if self.role == 'Paysant':
+    def Paysan(self):
+        if self.role == 'Paysan':
             self.Assassinstat == False
             self.Magestat == False
 
@@ -163,7 +182,7 @@ class RedCross(pygame.sprite.Sprite):
 class Sector(pygame.sprite.Sprite):
     def __init__(self, pivot):
         self.pivot = pivot
-        self.pos = pivot + (60, 0)
+        self.pos = pivot + (70, 0)
         self.image_orig = sector
         self.image = self.image_orig
         self.rect = self.image.get_rect(center = self.pos)
@@ -264,8 +283,8 @@ text_width = 500
 text_height = 200
 
 
-paysant = pygame.image.load(os.path.join("assets", "paysant.png"))
-paysant  = pygame.transform.rotate(paysant, 90)
+paysan = pygame.image.load(os.path.join("assets", "paysan.png"))
+paysan  = pygame.transform.rotate(paysan, 90)
 
 mage = pygame.image.load(os.path.join("assets", "mage.png"))
 mage  = pygame.transform.rotate(mage, 90)
@@ -279,7 +298,7 @@ redcross = pygame.transform.scale(redcross, (60, 60))
 fireball = pygame.image.load(os.path.join("assets", "fireball.png"))
 fireball = pygame.transform.scale(fireball, (20, 20))
 
-sector = pygame.image.load(os.path.join("assets", "sectore.png"))
+sector = pygame.image.load(os.path.join("assets", "sectore3.png"))
 sector = pygame.transform.scale(sector, (200, 200))
 sector  = pygame.transform.rotate(sector, 275)
 
@@ -448,7 +467,7 @@ def set_jeu():
                 if button_1.rect.collidepoint(pos):
                     M1.role = "Assassin"
                 if button_2.rect.collidepoint(pos):
-                    M1.role = "Paysant"
+                    M1.role = "Paysan"
                 if button_3.rect.collidepoint(pos):
                     M1.role = "Mage"
 
@@ -553,7 +572,7 @@ def playermanage():
 
     for player in players_group:
         player.Assassin() 
-        player.Paysant()
+        player.Paysan()
         player.mage()
         player.update()
         player.orientation()
@@ -617,7 +636,7 @@ def event():
                     player.Assassinstat = True
                     
                 if e.key == pygame.K_r and player.role == "Assassin":
-                    player.base_img = paysant
+                    player.base_img = paysan
                     player.Assassinstat = False
                 
 
@@ -626,7 +645,7 @@ def event():
                     player.Magestat = True
                     
                 if e.key == pygame.K_r and player.role == "Mage":
-                    player.base_img = paysant
+                    player.base_img = paysan
                     player.Magestat = False
                     
 
