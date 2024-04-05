@@ -15,7 +15,7 @@ from pygame import Vector2
 #-------------------------------INIT-----------------------------
 pygame.init()
 
-fps = 500
+fps = 120
 fpsClock = pygame.time.Clock()
 
 info = pygame.display.Info()
@@ -69,8 +69,6 @@ class Player(pygame.sprite.Sprite):
 
 
 
-
-
     def choisir_role(self):
         roles = ['Paysan', "Assassin", 'Mage']
         poids_roles = [10, 1, 1]
@@ -84,9 +82,6 @@ class Player(pygame.sprite.Sprite):
         keys = pygame.key.get_pressed()
 
         prev_x, prev_y = self.x, self.y
-
-
-
                 
         
         if keys[self.Kl]:
@@ -100,8 +95,6 @@ class Player(pygame.sprite.Sprite):
 
 
         velx, vely = self.x - prev_x, self.y - prev_y
-
-
 
             
         self.rect = pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
@@ -229,7 +222,7 @@ class Bullet(pygame.sprite.Sprite):
         self.y = tireur.y
         self.image = fireball
         self.destx, self.desty = pygame.mouse.get_pos()
-        self.speed = 10  
+        self.speed = 20  
         
         vect = (self.destx - self.x, self.desty - self.y)
         angle = math.atan2(vect[1], vect[0])
@@ -283,13 +276,13 @@ text_width = 500
 text_height = 200
 
 
-paysan = pygame.image.load(os.path.join("assets", "paysan.png"))
+paysan = pygame.image.load(os.path.join("assets", "paysan2.png"))
 paysan  = pygame.transform.rotate(paysan, 90)
 
-mage = pygame.image.load(os.path.join("assets", "mage.png"))
+mage = pygame.image.load(os.path.join("assets", "mage2.png"))
 mage  = pygame.transform.rotate(mage, 90)
 
-assassin = pygame.image.load(os.path.join("assets", "assassin.png"))
+assassin = pygame.image.load(os.path.join("assets", "assassin2.png"))
 assassin  = pygame.transform.rotate(assassin, 90)
 
 redcross = pygame.image.load(os.path.join("assets", "redcross.png"))
@@ -305,8 +298,8 @@ sector  = pygame.transform.rotate(sector, 275)
 players_group = pygame.sprite.Group()
 deathgroup = pygame.sprite.Group()
 
-M1 = Player(ws*5 // 20, hs*4 // 20, 100, 100, 2,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d, players_group)
-M2 = Player(ws*15 // 20, hs*4 // 20, 100, 100, 2, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT, players_group)
+M1 = Player(ws*5 // 20, hs*4 // 20, 100, 100, 4,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d, players_group)
+M2 = Player(ws*15 // 20, hs*4 // 20, 100, 100, 4, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT, players_group)
 
 #-------------------------------OTHER FUNCTION-----------------------------
 
