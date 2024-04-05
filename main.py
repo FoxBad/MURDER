@@ -23,7 +23,7 @@ w = 1000
 h = 800
 
 pygame.display.set_caption("APEO - BETA")
-icon = pygame.image.load(os.path.join("assets", "logot.png"))
+icon = pygame.image.load(os.path.join("assets", "logo2.png"))
 pygame.display.set_icon(icon)
 
 screen = pygame.display.set_mode((w, h))
@@ -276,13 +276,13 @@ text_width = 500
 text_height = 200
 
 
-paysan = pygame.image.load(os.path.join("assets", "paysan2.png"))
+paysan = pygame.image.load(os.path.join("assets", "paysan.png"))
 paysan  = pygame.transform.rotate(paysan, 90)
 
-mage = pygame.image.load(os.path.join("assets", "mage2.png"))
+mage = pygame.image.load(os.path.join("assets", "mage.png"))
 mage  = pygame.transform.rotate(mage, 90)
 
-assassin = pygame.image.load(os.path.join("assets", "assassin2.png"))
+assassin = pygame.image.load(os.path.join("assets", "assassin.png"))
 assassin  = pygame.transform.rotate(assassin, 90)
 
 redcross = pygame.image.load(os.path.join("assets", "redcross.png"))
@@ -353,7 +353,7 @@ def main_menu():
 
         settings_button = button.Button(50, 50, "settings.png", (75, 75), screen)
 
-        logo = image.Image(ws // 2, hs // 5, "logo.png", (300,300), screen)
+        logo = image.Image(ws // 2, hs // 5, "logo22.png", (300,300), screen)
         
 
         for e in pygame.event.get():
@@ -574,7 +574,7 @@ def playermanage():
     for player in players_group:
         draw_text(player.role, pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-80)
 
-        draw_text(str(player.vie), pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-60)
+        #draw_text(str(player.vie), pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-60)
         
         if player.role == 'Mage':
             draw_text(str(player.bullet) + " •", pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-60)
