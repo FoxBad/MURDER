@@ -99,7 +99,7 @@ class Player(pygame.sprite.Sprite):
         if self.vie <=0:
             self.etat = False
         
-    def checkalive(self, group, surf):
+    def checkalive(self, group):
         if self.etat == False:
-            redcross.RedCross(self.pos, group, surf)
+            redcross.RedCross(self.pos, group)
             self.kill()

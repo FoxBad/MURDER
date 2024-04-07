@@ -331,7 +331,7 @@ def playermanage():
         player.mage()
         player.update(layer2_group)
         player.orientation(screen)
-        player.checkalive(deathgroup, screen)
+        player.checkalive(deathgroup)
 
     for player in players_group:
         draw_text(player.role, pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-80)
@@ -341,6 +341,9 @@ def playermanage():
         if player.role == 'Mage':
             draw_text(str(player.bullet) + " •", pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-60)
             
+
+def death():
+    deathgroup.draw(screen)
 
 
 def bulletsmanage():
@@ -424,6 +427,7 @@ def game():
         screen.fill(WHITE)
 
         tiled()
+        death()
         playermanage()
         bulletsmanage()
         winsize()
