@@ -553,15 +553,7 @@ def l1g():
 
 
 
-
-
-
-
-
-
 def playermanage():
-
-
 
     for player in players_group:
         player.Assassin() 
