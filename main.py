@@ -2,20 +2,17 @@
 #-------------------------------IMPORT-----------------------------
 
 
-import sys, os, math, random
-import csv
+import sys, os
 import pygame
 from pygame.locals import *
-import button, image
-import pytmx
+import button, image, player, bullet, redcross, sector, tile
 from pytmx.util_pygame import load_pygame
-from pygame import Vector2
 
 
 #-------------------------------INIT-----------------------------
 pygame.init()
 
-fps = 500
+fps = 120
 fpsClock = pygame.time.Clock()
 
 info = pygame.display.Info()
@@ -23,7 +20,7 @@ w = 1000
 h = 800
 
 pygame.display.set_caption("APEO - BETA")
-icon = pygame.image.load(os.path.join("assets", "logot.png"))
+icon = pygame.image.load(os.path.join("assets", "logo2.png"))
 pygame.display.set_icon(icon)
 
 screen = pygame.display.set_mode((w, h))
@@ -37,135 +34,7 @@ winsize()
 
 #-------------------------------CLASS-----------------------------
 
-
-class Tile(pygame.sprite.Sprite):
-    def __init__(self,pos,surf,groups):
-        super().__init__(groups)
-        self.image = surf
-        self.rect = self.image.get_rect(topleft = pos)
-
-class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y, sx, sy, speed, Ku, Kd, Kl, Kr, groups):
-        super().__init__(groups)
-        self.x = x
-        self.y = y
-        self.sx = sx
-        self.sy = sy 
-        self.vie = 1
-        self.etat = True
-        self.speed = speed
-        self.role = self.choisir_role()  # Choix aléatoire du rôle
-        self.murderstat = False
-        self.Ku = Ku
-        self.Kd = Kd
-        self.Kl = Kl
-        self.Kr = Kr
-        self.bulletlist = []
-        self.bullet = 3
-
-
-               
-
-        if self.role == 'Innocent':
-            self.base_img = ino
-        if self.role == 'Murder':
-            self.base_img = ino
-        if self.role == 'Détective':
-            self.base_img = detect
-
-
-    def choisir_role(self):
-        roles = ['Innocent', "Murder", 'Détective']
-        poids_roles = [10, 1, 1]
-        role = random.choices(roles, weights=poids_roles, k=1)[0]
-        return role
-
-    def update(self):
-
-        self.image = pygame.transform.scale(self.base_img, (self.sx, self.sy))
-
-        keys = pygame.key.get_pressed()
-
-        prev_x, prev_y = self.x, self.y
-
-        
-        if keys[self.Kl]:
-            self.x -= self.speed
-        if keys[self.Kr]:
-            self.x += self.speed
-        if keys[self.Ku]:
-            self.y -= self.speed 
-        if keys[self.Kd]:
-            self.y += self.speed
-
-
-        self.rect = pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
-
-        for rect in layer1:
-            if self.rect.colliderect(rect):
-
-                self.x, self.y = prev_x, prev_y
-        
-
-    def orientation(self):
-
-
-        pos = pygame.mouse.get_pos()
-        self.x_dist = pos[0] - self.x
-        self.y_dist = -(pos[1] - self.y)
-        self.angle = math.degrees(math.atan2(self.y_dist, self.x_dist))
-        self.image  = pygame.transform.rotate(self.image, self.angle)
-        self.rectangle  = self.image.get_rect(center = (self.x, self.y))
-
-        screen.blit(self.image, self.rectangle)
-
-
-
-    def murder(self):
-        if self.role == 'Murder':
-            self.vect = pygame.Vector2((self.x, self.y))
-            self.sector = Sector(self.vect)
-            self.sector.update()
-
-    def innocent(self):
-        if self.role == 'Innocent':
-            self.murder == False
-            self.img = ino
-
-    def detective(self):
-        if self.role == 'Détective':
-            self.murder == False
-            self.img = detect
-
-    def perdre_vie(self):
-        self.vie -= 1
-        if self.vie <=0:
-            self.etat = False
-
-class Sector:
-    def __init__(self, pivot):
-        self.pivot = pivot
-        
-        self.pos = pivot + (70, 0)
-
-        self.image_orig = sector
-
-        self.image = self.image_orig
-        self.rect = self.image.get_rect(center = self.pos)
-
-        
-    def update(self):
-        
-        mouse_pos = Vector2(pygame.mouse.get_pos())
-        
-        mouse_offset = mouse_pos - self.pivot
-        mouse_angle = -math.degrees(math.atan2(mouse_offset.y, mouse_offset.x))
-        
-        self.image, self.rect = rotate_on_pivot(self.image_orig, mouse_angle, self.pivot, self.pos)
-    
-        screen.blit(self.image, self.rect)
-
-
+'''
 class Camera(pygame.sprite.Group):
 
     def __init__(self):
@@ -179,61 +48,31 @@ class Camera(pygame.sprite.Group):
 
         floor_offset_pos = self.floor_rect.topleft - self.offset
 
-        for tiles in map_group:
+        for tiles in layer1_group:
             screen.blit(tiles.draw(screen), floor_offset_pos)
 
         for sprite in players_group:
             offset_pos = sprite.rect.topleft - self.offset
             screen.blit(sprite.image, offset_pos)
-
-  
-class Bullet:
-    def __init__(self, tireur):
-        self.tireur = tireur
-        self.x = tireur.x
-        self.y = tireur.y
-        self.destx, self.desty = pygame.mouse.get_pos()
-        self.radius = 5
-        self.center = [self.x, self.y]
-        self.speed = 20  
-        
-        vect = (self.destx - self.x, self.desty - self.y)
-        angle = math.atan2(vect[1], vect[0])
-        self.change_x = math.cos(angle) * self.speed
-        self.change_y = math.sin(angle) * self.speed
-
-
-    def draw(self):
-
-        self.circle = pygame.draw.circle(screen, BLACK, [self.x, self.y], self.radius, 0)
-        self.rect = pygame.Rect(self.x-self.radius/2, self.y-self.radius/2, self.radius, self.radius)
-
-
-    def move(self):
-
-        self.x += self.change_x
-        self.y += self.change_y
-                
-
-
+'''       
 #-------------------------------TILED-----------------------------
 
-tmx_data = load_pygame(os.path.join("assets", "map.tmx"))
-map_group = pygame.sprite.Group()
 
-# cycle through all layers
+tmx_data = load_pygame(os.path.join("assets", "map.tmx"))
+layer1_group = pygame.sprite.Group()  # Groupe pour la première couche
+layer2_group = pygame.sprite.Group()  # Groupe pour la deuxième couche
+
 for layer in tmx_data.visible_layers:
-    # if layer.name in ('Floor', 'Plants and rocks', 'Pipes')
-    if hasattr(layer,'data'):
-        for x,y,surf in layer.tiles():
+    if hasattr(layer, 'data'):
+        for x, y, surf in layer.tiles():
             pos = (x * 128, y * 128)
-            Tile(pos = pos, surf = surf, groups = map_group)
- 
-for obj in tmx_data.objects:
-    pos = obj.x,obj.y
-    if obj.type in ('Building', 'Vegetation'):
-        Tile(pos = pos, surf = obj.image, groups = map_group)
- 
+            if layer.name == '1':  # Si c'est la première couche
+                tile.Tile(pos=pos, surf=surf, groups=layer1_group)
+            elif layer.name == '2':  # Si c'est la deuxième couche
+                tile.Tile(pos=pos, surf=surf, groups=layer2_group)
+
+
+    
 #-------------------------------VARIABLE-----------------------------
 
 BLACK = (0, 0, 0)
@@ -252,23 +91,20 @@ button_height = 150
 text_width = 500
 text_height = 200
 
+paysan = pygame.image.load(os.path.join("assets", "paysan.png"))
+paysan  = pygame.transform.rotate(paysan, 90)
 
-ino = pygame.image.load(os.path.join("assets", "ino.png"))
-inogold = pygame.image.load(os.path.join("assets", "inogold.png"))
+mage = pygame.image.load(os.path.join("assets", "mage.png"))
+mage  = pygame.transform.rotate(mage, 90)
 
-detect = pygame.image.load(os.path.join("assets", "detect.png"))
-murder = pygame.image.load(os.path.join("assets", "murder.png"))
-
-sector = pygame.image.load(os.path.join("assets", "sector.png"))
-sector = pygame.transform.scale(sector, (200, 200))
-sector  = pygame.transform.rotate(sector, 290)
+assassin = pygame.image.load(os.path.join("assets", "assassin.png"))
+assassin  = pygame.transform.rotate(assassin, 90)
 
 players_group = pygame.sprite.Group()
-layer1 = []
+deathgroup = pygame.sprite.Group()
 
-
-M1 = Player(ws*5 // 20, hs*4 // 20, 100, 100, 5,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d, players_group)
-#M2 = Player(ws*15 // 20, hs*4 // 20, 100, 100, "Murder2", 5, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT, players_group)
+M1 = player.Player(ws*5 // 20, hs*4 // 20, 100, 100, 4,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d, players_group, paysan)
+M2 = player.Player(ws*15 // 20, hs*4 // 20, 100, 100, 4, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT, players_group, paysan)
 
 #-------------------------------OTHER FUNCTION-----------------------------
 
@@ -288,15 +124,6 @@ def keyPressed(inputKey):
 def tryquit():
     pygame.quit()
     sys.exit()
-
-def rotate_on_pivot(image, angle, pivot, origin):
-    
-    surf = pygame.transform.rotate(image, angle)
-    
-    offset = pivot + (origin - pivot).rotate(-angle)
-    rect = surf.get_rect(center = offset)
-    
-    return surf, rect
 
 
 #-------------------------------MAIN MENU-----------------------------
@@ -319,7 +146,7 @@ def main_menu():
 
         settings_button = button.Button(50, 50, "settings.png", (75, 75), screen)
 
-        logo = image.Image(ws // 2, hs // 5, "logo.png", (300,300), screen)
+        logo = image.Image(ws // 2, hs // 5, "logo22.png", (300,300), screen)
         
 
         for e in pygame.event.get():
@@ -424,11 +251,11 @@ def set_jeu():
                 sys.exit()
             if e.type == pygame.MOUSEBUTTONDOWN:
                 if button_1.rect.collidepoint(pos):
-                    M1.role = "Murder"
+                    M1.role = "Assassin"
                 if button_2.rect.collidepoint(pos):
-                    M1.role = "Innocent"
+                    M1.role = "Paysan"
                 if button_3.rect.collidepoint(pos):
-                    M1.role = "Détective"
+                    M1.role = "Mage"
 
                 if return_button.rect.collidepoint(pos):
                     pause_menu()
@@ -492,60 +319,28 @@ def set_menu():
 
 
 def tiled():
-    map_group.draw(screen)
-
-
-def l1g():
-
-    # Convert visible_layers generator to a list
-    visible_layers = list(tmx_data.visible_layers)
-
-    # Check if layer_index is valid
-    if 1 < 0 or 1 >= len(visible_layers):
-        print("Invalid layer index")
-        return
-
-    layer = visible_layers[1]
-
-    # Check if the layer has 'data' attribute
-    if not hasattr(layer, 'data'):
-        print("Layer does not contain tile data")
-        return
-
-    for surf in layer.tiles():
-        
-        surfrect = surf[2].get_rect(topleft=(surf[0]*128, surf[1]*128))
-
-        layer1.append(surfrect)
-
-
-l1g()
-
-
-def checkalive():
-    for player in players_group:
-        if player.etat == False:
-            players_group.remove(player)
+    layer1_group.draw(screen)
+    layer2_group.draw(screen)
 
 
 def playermanage():
 
     for player in players_group:
-        draw_text(player.role, pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-80)
-        
-        if player.role == 'Détective':
-            draw_text(str(player.bullet) + " •", pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-60)
+        player.Assassin(screen) 
+        player.Paysan()
+        player.mage()
+        player.update(layer2_group)
+        player.orientation(screen)
+        player.checkalive(deathgroup, screen)
 
     for player in players_group:
+        draw_text(player.role, pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-80)
 
-        player.update()
-        player.orientation()
-        player.murder() 
-        player.innocent()
-        player.detective()
+        #draw_text(str(player.vie), pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-60)
+        
+        if player.role == 'Mage':
+            draw_text(str(player.bullet) + " •", pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-60)
             
-
-
 
 
 def bulletsmanage():
@@ -553,22 +348,22 @@ def bulletsmanage():
         for bullet in player.bulletlist:
 
 
-            bullet.draw()
-            bullet.move() 
+            bullet.update(screen)
 
             otherplayer = players_group.copy()
             otherplayer.remove(player)
+
             
             for player2 in otherplayer:
-                if bullet.rect.colliderect(player2.rect):
-                    
+                if pygame.sprite.collide_mask(bullet, player2):
                     player2.perdre_vie()
+                    player.bulletlist.remove(bullet)
 
-            if bullet.x < 0 or bullet.x > info.current_w or bullet.y < 0 or bullet.y > info.current_h:
+            if bullet.x < 0 or bullet.x > 1920 or bullet.y < 0 or bullet.y > 1080:
                 player.bulletlist.remove(bullet)
 
-            for rect in layer1:
-                if bullet.rect.colliderect(rect):
+            for sprite in layer2_group:
+                if pygame.sprite.collide_mask(bullet, sprite):
                     player.bulletlist.remove(bullet)
 
 
@@ -578,27 +373,48 @@ def event():
         if e.type == QUIT:
             pygame.quit()
             sys.exit()
+            
+        
+        for player in players_group:
 
-        if e.type == pygame.KEYDOWN:
+            if e.type == pygame.KEYDOWN:
 
-            if e.key == pygame.K_ESCAPE:
-                pause_menu()
+                if e.key == pygame.K_ESCAPE:
+                    pause_menu()
 
-
-            for player in players_group:
-                if e.key == pygame.K_SPACE and player.role == 'Détective' and player.bullet > 0:
-                    new_bul = Bullet(player)
-                    player.bullet -= 1
-                    player.bulletlist.append(new_bul)
-
-
-                if e.key == pygame.K_e and player.role == "Murder":
-                    player.img = murder
-                    player.murderstat = True
+                if e.key == pygame.K_e and player.role == "Assassin":
+                    player.base_img = assassin
+                    player.Assassinstat = True
                     
-                if e.key == pygame.K_r and player.role == "Murder":
-                    player.img = ino
-                    player.murderstat = False
+                if e.key == pygame.K_r and player.role == "Assassin":
+                    player.base_img = paysan
+                    player.Assassinstat = False
+                
+
+                if e.key == pygame.K_e and player.role == "Mage":
+                    player.base_img = mage
+                    player.Magestat = True
+                    
+                if e.key == pygame.K_r and player.role == "Mage":
+                    player.base_img = paysan
+                    player.Magestat = False
+                    
+
+
+            if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and player.role == 'Mage' and player.Magestat == True and player.bullet > 0:
+                new_bul = bullet.Bullet(player, player.bulletlist)
+                player.bullet -= 1
+
+
+            if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and player.role == "Assassin" and player.Assassinstat == True:
+
+                otherplayer = players_group.copy()
+                otherplayer.remove(player)
+                
+                for player2 in otherplayer:
+                    if pygame.sprite.collide_mask(player.sector, player2):
+                        player2.perdre_vie()
+                    
 
 
 # Game loop.
@@ -606,14 +422,13 @@ def game():
     running = True
     while running:
         screen.fill(WHITE)
-        
+
         tiled()
-        checkalive()
         playermanage()
         bulletsmanage()
         winsize()
-
         event()
+
         pygame.display.flip()
         fpsClock.tick(fps)
 
