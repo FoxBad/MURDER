@@ -2,7 +2,7 @@ import socket, random
 import time
 
 # Adresse IP et port du serveur
-HOST = '192.168.56.1'
+HOST = '192.168.1.21'
 PORT = 5050
 
 position = str(random.randint(0,100)) + " " + str(random.randint(0,100))

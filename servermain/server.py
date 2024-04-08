@@ -31,7 +31,7 @@ currentPlayer = 0
 MAX_PLAYERS = 3
 
 # Configuration du serveur
-HOST = '192.168.56.1'
+HOST = '192.168.1.21'
 PORT = 5050
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
