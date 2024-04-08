@@ -405,7 +405,7 @@ def event():
 
 
             if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and player.role == 'Mage' and player.Magestat == True and player.bullet > 0:
-                new_bul = bullet.Bullet(player, player.bulletlist)
+                bullet.Bullet(player, player.bulletlist)
                 player.bullet -= 1
 
 
