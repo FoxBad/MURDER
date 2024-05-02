@@ -6,6 +6,7 @@ import sys, os
 import pygame
 from pygame.locals import *
 import button, image, player, bullet, redcross, sector, tile
+from coins import Coins
 from pytmx.util_pygame import load_pygame
 
 
@@ -34,7 +35,7 @@ winsize()
 
 #-------------------------------CLASS-----------------------------
 
-'''
+
 class Camera(pygame.sprite.Group):
 
     def __init__(self):
@@ -54,7 +55,7 @@ class Camera(pygame.sprite.Group):
         for sprite in players_group:
             offset_pos = sprite.rect.topleft - self.offset
             screen.blit(sprite.image, offset_pos)
-'''       
+       
 #-------------------------------TILED-----------------------------
 
 
@@ -102,9 +103,14 @@ assassin  = pygame.transform.rotate(assassin, 90)
 
 players_group = pygame.sprite.Group()
 deathgroup = pygame.sprite.Group()
+coinsgroup = pygame.sprite.Group()
 
 M1 = player.Player(ws*5 // 20, hs*4 // 20, 100, 100, 4,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d, players_group, paysan)
-M2 = player.Player(ws*15 // 20, hs*4 // 20, 100, 100, 4, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT, players_group, paysan)
+M2 = player.Player(ws*10 // 20, hs*4 // 20, 100, 100, 4, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT, players_group, paysan)
+
+for i in  range(10):
+    Coins(coinsgroup)
+
 
 #-------------------------------OTHER FUNCTION-----------------------------
 
@@ -336,14 +342,18 @@ def playermanage():
     for player in players_group:
         draw_text(player.role, pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-80)
 
-        #draw_text(str(player.vie), pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-60)
+        draw_text(str(player.vie), pygame.font.Font(None, 30), BLACK, screen, player.x+30, player.y-60)
         
         if player.role == 'Mage':
-            draw_text(str(player.bullet) + " •", pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-60)
+            draw_text(str(player.bullet) + " •", pygame.font.Font(None, 30), BLACK, screen, player.x-30, player.y-60)
             
 
 def death():
     deathgroup.draw(screen)
+
+def coins():
+    coinsgroup.draw(screen)
+
 
 
 def bulletsmanage():
@@ -407,6 +417,9 @@ def event():
             if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and player.role == 'Mage' and player.Magestat == True and player.bullet > 0:
                 bullet.Bullet(player, player.bulletlist)
                 player.bullet -= 1
+            
+
+
 
 
             if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and player.role == "Assassin" and player.Assassinstat == True:
@@ -428,6 +441,7 @@ def game():
 
         tiled()
         death()
+        coins()
         playermanage()
         bulletsmanage()
         winsize()
