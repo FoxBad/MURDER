@@ -12,8 +12,8 @@ class Player(pygame.sprite.Sprite):
         self.etat = True
         self.vel = vel
         self.role = self.choisir_role()  # Choix aléatoire du rôle
-        self.Assassinstat = False
-        self.Magestat = False
+        self.assassinstat = False
+        self.magestat = False
         self.Ku = Ku
         self.Kd = Kd
         self.Kl = Kl
@@ -21,11 +21,12 @@ class Player(pygame.sprite.Sprite):
         self.bulletlist = pygame.sprite.Group()
         self.bullet = 3
         self.base_img = base_img
+        self.coins = 0
 
 
 
     def choisir_role(self):
-        roles = ['Paysan', "Assassin", 'Mage']
+        roles = ['innocent', "assassin", 'mage']
         poids_roles = [10, 1, 1]
         role = random.choices(roles, weights=poids_roles, k=1)[0]
         return role
@@ -79,20 +80,20 @@ class Player(pygame.sprite.Sprite):
         surf.blit(self.image, self.rectangle)
 
 
-    def Assassin(self, surf):
-        if self.role == 'Assassin' and self.Assassinstat == True:
+    def assassin(self, surf):
+        if self.role == 'assassin' and self.assassinstat == True:
             self.vect = pygame.Vector2((self.x, self.y))
             self.sector = sector.Sector(self.vect)
             self.sector.update(surf)
 
-    def Paysan(self):
-        if self.role == 'Paysan':
-            self.Assassinstat == False
-            self.Magestat == False
+    def innocent(self):
+        if self.role == 'innocent':
+            self.assassinstat == False
+            self.magestat == False
 
     def mage(self):
-        if self.role == 'Mage':
-            self.Assassinstat == False
+        if self.role == 'mage':
+            self.assassinstat == False
 
     def perdre_vie(self):
         self.vie -= 1
