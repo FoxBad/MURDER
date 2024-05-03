@@ -6,7 +6,7 @@ import sys, os
 import pygame
 from pygame.locals import *
 import button, image, player, bullet, redcross, sector, tile
-from coins import Coins
+from coins import CoinsC
 from pytmx.util_pygame import load_pygame
 
 
@@ -84,7 +84,7 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 CYAN = (0, 255, 255)
-MAGENTA = (255, 0, 255)
+mageNTA = (255, 0, 255)
 
 button_width = 375
 button_height = 150
@@ -92,8 +92,8 @@ button_height = 150
 text_width = 500
 text_height = 200
 
-paysan = pygame.image.load(os.path.join("assets", "paysan.png"))
-paysan  = pygame.transform.rotate(paysan, 90)
+innocent = pygame.image.load(os.path.join("assets", "innocent.png"))
+innocent  = pygame.transform.rotate(innocent, 90)
 
 mage = pygame.image.load(os.path.join("assets", "mage.png"))
 mage  = pygame.transform.rotate(mage, 90)
@@ -105,11 +105,11 @@ players_group = pygame.sprite.Group()
 deathgroup = pygame.sprite.Group()
 coinsgroup = pygame.sprite.Group()
 
-M1 = player.Player(ws*5 // 20, hs*4 // 20, 100, 100, 4,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d, players_group, paysan)
-M2 = player.Player(ws*10 // 20, hs*4 // 20, 100, 100, 4, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT, players_group, paysan)
+CameraGroup = Camera()
 
-for i in  range(10):
-    Coins(coinsgroup)
+
+M1 = player.Player(ws*5 // 20, hs*4 // 20, 100, 100, 4,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d, players_group, innocent)
+#M2 = player.Player(ws*10 // 20, hs*4 // 20, 100, 100, 4, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT, players_group, innocent)
 
 
 #-------------------------------OTHER FUNCTION-----------------------------
@@ -135,6 +135,7 @@ def tryquit():
 #-------------------------------MAIN MENU-----------------------------
 
 def main_menu():
+    global start_ticks
     while True:
 
         pos = pygame.mouse.get_pos()
@@ -161,7 +162,10 @@ def main_menu():
                 sys.exit()
             if e.type == pygame.MOUSEBUTTONDOWN:
                 if play_button.rect.collidepoint(pos):
+                    start_ticks=pygame.time.get_ticks() #starter tick
                     game()
+
+
                 if quit_button.rect.collidepoint(pos):
                     tryquit()
                 if settings_button.rect.collidepoint(pos):
@@ -210,6 +214,7 @@ def pause_menu():
             if e.type == pygame.MOUSEBUTTONDOWN:
                 if resume_button.rect.collidepoint(pos):
                     game()
+                    
                 if menu_button.rect.collidepoint(pos):
                     main_menu()
                 if settings_button.rect.collidepoint(pos):
@@ -257,11 +262,11 @@ def set_jeu():
                 sys.exit()
             if e.type == pygame.MOUSEBUTTONDOWN:
                 if button_1.rect.collidepoint(pos):
-                    M1.role = "Assassin"
+                    M1.role = "assassin"
                 if button_2.rect.collidepoint(pos):
-                    M1.role = "Paysan"
+                    M1.role = "innocent"
                 if button_3.rect.collidepoint(pos):
-                    M1.role = "Mage"
+                    M1.role = "mage"
 
                 if return_button.rect.collidepoint(pos):
                     pause_menu()
@@ -332,19 +337,21 @@ def tiled():
 def playermanage():
 
     for player in players_group:
-        player.Assassin(screen) 
-        player.Paysan()
+        player.assassin(screen) 
+        player.innocent()
         player.mage()
         player.update(layer2_group)
         player.orientation(screen)
         player.checkalive(deathgroup)
 
     for player in players_group:
-        draw_text(player.role, pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-80)
+        draw_text(str(player.role), pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-80)
 
+        draw_text(str(player.coins) + " $", pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-60)
+            
         draw_text(str(player.vie), pygame.font.Font(None, 30), BLACK, screen, player.x+30, player.y-60)
         
-        if player.role == 'Mage':
+        if player.role == 'mage':
             draw_text(str(player.bullet) + " •", pygame.font.Font(None, 30), BLACK, screen, player.x-30, player.y-60)
             
 
@@ -355,8 +362,8 @@ def coins():
     coinsgroup.draw(screen)
 
 
-
 def bulletsmanage():
+
     for player in players_group:
         for bullet in player.bulletlist:
 
@@ -378,8 +385,41 @@ def bulletsmanage():
             for sprite in layer2_group:
                 if pygame.sprite.collide_mask(bullet, sprite):
                     player.bulletlist.remove(bullet)
+            
+            if player.bullet == 0:
+                player.role = 'innocent'
+                player.base_img = innocent
+                player.magestat = False
 
 
+
+def coinsmanage():
+    for player in players_group:
+        for coin in coinsgroup:
+            if pygame.sprite.collide_mask(player, coin):
+                coinsgroup.remove(coin)
+                player.coins += 1
+            
+
+        if player.role != 'assassin':
+            if player.coins >=10 and player.role == 'mage' and player.bullet < 3:
+                player.coins -= 10
+                player.bullet = 3
+
+            if player.coins >=10 :
+                player.role = 'mage'
+                player.coins -= 10
+                player.bullet = 3
+
+  
+def clock():
+    global start_ticks
+    seconds=(pygame.time.get_ticks()-start_ticks)/1000 #calculate how many seconds
+    if seconds>5: # if more than 10 seconds close the game
+        CoinsC(coinsgroup, ws, hs)
+        start_ticks=pygame.time.get_ticks() #starter tick
+
+        
 
 def event():
     for e in pygame.event.get():
@@ -395,34 +435,32 @@ def event():
                 if e.key == pygame.K_ESCAPE:
                     pause_menu()
 
-                if e.key == pygame.K_e and player.role == "Assassin":
+                if e.key == pygame.K_e and player.role == "assassin":
                     player.base_img = assassin
-                    player.Assassinstat = True
+                    player.assassinstat = True
                     
-                if e.key == pygame.K_r and player.role == "Assassin":
-                    player.base_img = paysan
-                    player.Assassinstat = False
+                if e.key == pygame.K_r and player.role == "assassin":
+                    player.base_img = innocent
+                    player.assassinstat = False
                 
 
-                if e.key == pygame.K_e and player.role == "Mage":
+                if e.key == pygame.K_e and player.role == "mage":
                     player.base_img = mage
-                    player.Magestat = True
+                    player.magestat = True
                     
-                if e.key == pygame.K_r and player.role == "Mage":
-                    player.base_img = paysan
-                    player.Magestat = False
+                if e.key == pygame.K_r and player.role == "mage":
+                    player.base_img = innocent
+                    player.magestat = False
                     
 
 
-            if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and player.role == 'Mage' and player.Magestat == True and player.bullet > 0:
+            if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and player.role == 'mage' and player.magestat == True and player.bullet > 0:
                 bullet.Bullet(player, player.bulletlist)
                 player.bullet -= 1
             
 
 
-
-
-            if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and player.role == "Assassin" and player.Assassinstat == True:
+            if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and player.role == "assassin" and player.assassinstat == True:
 
                 otherplayer = players_group.copy()
                 otherplayer.remove(player)
@@ -431,6 +469,9 @@ def event():
                     if pygame.sprite.collide_mask(player.sector, player2):
                         player2.perdre_vie()
                     
+
+
+
 
 
 # Game loop.
@@ -442,8 +483,10 @@ def game():
         tiled()
         death()
         coins()
+        clock()
         playermanage()
         bulletsmanage()
+        coinsmanage()
         winsize()
         event()
 
