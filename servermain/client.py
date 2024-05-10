@@ -24,7 +24,7 @@ class Player(pygame.sprite.Sprite):
 
 
         
-HOST = '192.168.1.21'
+HOST = '172.20.10.2'
 PORT = 5050
 position = str(random.randint(0,100)) + " " + str(random.randint(0,100))
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
