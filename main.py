@@ -5,7 +5,7 @@
 import sys, os
 import pygame
 from pygame.locals import *
-import button, image, player, bullet, redcross, sector, tile
+import button, image, player, bullet, redcross, sector, tile, camera
 from coins import CoinsC
 from pytmx.util_pygame import load_pygame
 
@@ -36,26 +36,6 @@ winsize()
 #-------------------------------CLASS-----------------------------
 
 
-class Camera(pygame.sprite.Group):
-
-    def __init__(self):
-        super().__init__()
-        self.offset = pygame.math.Vector2()
-        self.floor_rect = pygame.Rect(0, 0, 4400, 4400)
-
-    def custom_draw(self, player):
-        self.offset.x = player.rect.centerx - ws // 2 
-        self.offset.y = player.rect.centery - hs // 2 
-
-        floor_offset_pos = self.floor_rect.topleft - self.offset
-
-        for tiles in layer1_group:
-            screen.blit(tiles.draw(screen), floor_offset_pos)
-
-        for sprite in players_group:
-            offset_pos = sprite.rect.topleft - self.offset
-            screen.blit(sprite.image, offset_pos)
-       
 #-------------------------------TILED-----------------------------
 
 
@@ -72,7 +52,6 @@ for layer in tmx_data.visible_layers:
             elif layer.name == '2':  # Si c'est la deuxième couche
                 tile.Tile(pos=pos, surf=surf, groups=layer2_group)
 
-
     
 #-------------------------------VARIABLE-----------------------------
 
@@ -84,7 +63,7 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 CYAN = (0, 255, 255)
-mageNTA = (255, 0, 255)
+MAGENTA = (255, 0, 255)
 
 button_width = 375
 button_height = 150
@@ -105,12 +84,12 @@ players_group = pygame.sprite.Group()
 deathgroup = pygame.sprite.Group()
 coinsgroup = pygame.sprite.Group()
 
-CameraGroup = Camera()
+allsprite = pygame.sprite.Group()
 
 
-M1 = player.Player(ws*5 // 20, hs*4 // 20, 100, 100, 4,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d, players_group, innocent)
+CameraGroup = camera.Camera()
+M1 = player.Player(ws*5 // 20, hs*4 // 20, 100, 100, 4,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d, allsprite, players_group, CameraGroup, innocent)
 #M2 = player.Player(ws*10 // 20, hs*4 // 20, 100, 100, 4, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT, players_group, innocent)
-
 
 #-------------------------------OTHER FUNCTION-----------------------------
 
@@ -145,7 +124,7 @@ def main_menu():
         button_x = ws // 2
         button_y = hs // 2
 
-        fond = image.Image(ws // 2, hs // 2, "fond.png", (ws,hs), screen)
+        fond = image.Image(ws // 2, hs // 2, "back3.jpg", (ws,hs), screen)
         
         play_button = button.Button(button_x, button_y +50, "play.png", (button_width,button_height), screen)
 
@@ -190,7 +169,7 @@ def pause_menu():
         pos = pygame.mouse.get_pos()
 
 
-        fondp = image.Image(ws // 2, hs // 2, "fondp.jpg", (ws,hs), screen)
+        fondp = image.Image(ws // 2, hs // 2, "back2.jpg", (ws,hs), screen)
 
         pause = image.Image(ws // 2, hs // 4, "pause.png", (text_width,text_height), screen)
 
@@ -244,7 +223,7 @@ def set_jeu():
         button_x = ws // 2
         button_y = hs // 2
 
-        setfond = image.Image(ws // 2, hs // 2, "setfond.png", (ws,hs), screen)
+        setfond = image.Image(ws // 2, hs // 2, "back1.jpg", (ws,hs), screen)
         settingst = image.Image(ws // 2, hs // 7, "settingst.png", (text_width,text_height), screen)
 
         button_1 = button.Button(button_x -250, button_y -150, "murderb.png", (button_width,button_height), screen)
@@ -293,7 +272,7 @@ def set_menu():
         button_x = ws // 2
         button_y = hs // 2
 
-        setfond = image.Image(ws // 2, hs // 2, "setfond.png", (ws,hs), screen)
+        setfond = image.Image(ws // 2, hs // 2, "back1.jpg", (ws,hs), screen)
         settingst = image.Image(ws // 2, hs // 7, "settingst.png", (text_width,text_height), screen)
 
         button_1 = button.Button(button_x -250, button_y -150, "add.png", (button_width,button_height), screen)
@@ -329,38 +308,30 @@ def set_menu():
 #-------------------------------JEU-----------------------------
 
 
-def tiled():
-    layer1_group.draw(screen)
-    layer2_group.draw(screen)
 
 
 def playermanage():
 
-    for player in players_group:
-        player.assassin(screen) 
-        player.innocent()
-        player.mage()
-        player.update(layer2_group)
-        player.orientation(screen)
-        player.checkalive(deathgroup)
+    for p in players_group:
 
-    for player in players_group:
-        draw_text(str(player.role), pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-80)
+        p.update(layer2_group)
+        p.orientation(screen)
+        CameraGroup.custom_draw(p , layer1_group, layer2_group, screen, allsprite)
 
-        draw_text(str(player.coins) + " $", pygame.font.Font(None, 30), BLACK, screen, player.x, player.y-60)
+
+        p.roles(screen) 
+
+        p.checkalive(deathgroup, allsprite)
+
+        draw_text(str(p.role), pygame.font.Font(None, 30), BLACK, screen, p.x, p.y-80)
+
+        draw_text(str(p.coins) + " $", pygame.font.Font(None, 30), BLACK, screen, p.x, p.y-60)
             
-        draw_text(str(player.vie), pygame.font.Font(None, 30), BLACK, screen, player.x+30, player.y-60)
+        draw_text(str(p.vie), pygame.font.Font(None, 30), BLACK, screen, p.x+30, p.y-60)
         
-        if player.role == 'mage':
-            draw_text(str(player.bullet) + " •", pygame.font.Font(None, 30), BLACK, screen, player.x-30, player.y-60)
-            
-
-def death():
-    deathgroup.draw(screen)
-
-def coins():
-    coinsgroup.draw(screen)
-
+        if p.role == 'mage':
+            draw_text(str(p.bullet) + " •", pygame.font.Font(None, 30), BLACK, screen, p.x-30, p.y-60)
+    
 
 def bulletsmanage():
 
@@ -416,7 +387,7 @@ def clock():
     global start_ticks
     seconds=(pygame.time.get_ticks()-start_ticks)/1000 #calculate how many seconds
     if seconds>5: # if more than 10 seconds close the game
-        CoinsC(coinsgroup, ws, hs)
+        CoinsC(allsprite, coinsgroup, ws, hs)
         start_ticks=pygame.time.get_ticks() #starter tick
 
         
@@ -480,9 +451,6 @@ def game():
     while running:
         screen.fill(WHITE)
 
-        tiled()
-        death()
-        coins()
         clock()
         playermanage()
         bulletsmanage()
