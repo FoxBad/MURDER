@@ -1,8 +1,11 @@
 import pygame, random, sector, math, redcross, os
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y, sx, sy, vel, Ku, Kd, Kl, Kr, groups, base_img):
-        super().__init__(groups)
+    def __init__(self, x, y, sx, sy, vel, Ku, Kd, Kl, Kr, allspritegroup, groups, groups2, base_img):
+        super().__init__(allspritegroup)
+        groups.add(self)
+        groups2.add(self)
+
         self.x = x
         self.y = y
         self.sx = sx
@@ -80,18 +83,16 @@ class Player(pygame.sprite.Sprite):
         surf.blit(self.image, self.rectangle)
 
 
-    def assassin(self, surf):
+    def roles(self, surf):
         if self.role == 'assassin' and self.assassinstat == True:
             self.vect = pygame.Vector2((self.x, self.y))
             self.sector = sector.Sector(self.vect)
             self.sector.update(surf)
 
-    def innocent(self):
         if self.role == 'innocent':
             self.assassinstat == False
             self.magestat == False
 
-    def mage(self):
         if self.role == 'mage':
             self.assassinstat == False
 
@@ -100,7 +101,7 @@ class Player(pygame.sprite.Sprite):
         if self.vie <=0:
             self.etat = False
         
-    def checkalive(self, group):
+    def checkalive(self, group, allspritegroup):
         if self.etat == False:
-            redcross.RedCross(self.pos, group)
+            redcross.RedCross(self.pos, allspritegroup ,group)
             self.kill()
