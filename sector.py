@@ -25,14 +25,14 @@ class Sector(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center = self.pos)
 
         
-    def update(self, pivot):
+    def update(self, pivot, demi):
 
         self.pivot = pivot
         self.pos = self.player.pos + (70, 0)
-        
+      
         mouse_pos = pygame.Vector2(pygame.mouse.get_pos())
-        
-        mouse_offset = mouse_pos - self.pivot
+               
+        mouse_offset = mouse_pos - demi
         mouse_angle = -math.degrees(math.atan2(mouse_offset.y, mouse_offset.x))
         
         self.image, self.rect = rotate_on_pivot(self.image_orig, mouse_angle, self.pivot, self.pos)

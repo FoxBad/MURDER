@@ -30,7 +30,7 @@ class Player(pygame.sprite.Sprite):
 
         self.vectsize = pygame.Vector2((ws//2, hs//2))
         self.vectsect = pygame.Vector2(self.pos)
-        self.sector = sector.Sector(self.vectsize, allspritegroup, self)
+        self.sector = sector.Sector(self.vectsect, allspritegroup, self)
 
 
 
@@ -109,7 +109,7 @@ class Player(pygame.sprite.Sprite):
     def managesector(self, ws ,hs):
         self.vectsize = pygame.Vector2((ws//2, hs//2))
         self.vectsect = pygame.Vector2(self.pos)
-        self.sector.update(self.vectsize)
+        self.sector.update(self.vectsect, self.vectsize)
 
     def perdre_vie(self):
         self.vie -= 1
