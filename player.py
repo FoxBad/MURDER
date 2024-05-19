@@ -1,13 +1,13 @@
 import pygame, random, sector, math, redcross, os
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y, sx, sy, vel, Ku, Kd, Kl, Kr, allspritegroup, groups, groups2, base_img):
+    def __init__(self, sx, sy, vel, Ku, Kd, Kl, Kr, allspritegroup, groups, base_img, ws ,hs):
         super().__init__(allspritegroup)
         groups.add(self)
-        groups2.add(self)
 
-        self.x = x
-        self.y = y
+        self.x = 2200
+        self.y = 2200
+        self.pos = pygame.Vector2((self.x,self.y))
         self.sx = sx
         self.sy = sy 
         self.size = (sx, sy)
@@ -24,7 +24,13 @@ class Player(pygame.sprite.Sprite):
         self.bulletlist = pygame.sprite.Group()
         self.bullet = 3
         self.base_img = base_img
+        self.image = pygame.transform.scale(self.base_img, (self.sx, self.sy))
         self.coins = 0
+        self.rect = pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
+
+        self.vectsize = pygame.Vector2((ws//2, hs//2))
+        self.vectsect = pygame.Vector2(self.pos)
+        self.sector = sector.Sector(self.vectsize, allspritegroup, self)
 
 
 
@@ -59,7 +65,7 @@ class Player(pygame.sprite.Sprite):
             self.velx, self.vely = self.x - self.prev_x, self.y - self.prev_y
 
             
-            self.rect = pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
+            #self.rect = pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
             #self.rect = pygame.draw.rect(screen, BLACK, pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
         
 
@@ -68,33 +74,42 @@ class Player(pygame.sprite.Sprite):
                     self.x, self.y = self.prev_x, self.prev_y
 
 
-    def orientation(self, surf):
+    def orientation(self, ws ,hs):
 
         pos = pygame.mouse.get_pos()
-        self.x_dist = pos[0] - self.x
-        self.y_dist = -(pos[1] - self.y)
+        self.x_dist = pos[0] - ws//2
+        self.y_dist = -(pos[1] - hs//2)
         self.angle = math.degrees(math.atan2(self.y_dist, self.x_dist))
         self.image  = pygame.transform.rotate(self.image, self.angle)
-        self.rectangle  = self.image.get_rect(center = (self.x, self.y))
+        self.rect  = self.image.get_rect(center = (self.x, self.y))
 
         self.mask = pygame.mask.from_surface(self.image)
-        self.pos = (self.x,self.y)
+        self.pos = pygame.Vector2((self.x,self.y))
 
-        surf.blit(self.image, self.rectangle)
+    def roles(self, allspritegroup, ws ,hs): 
+        if self.role == 'assassin':
+            if self.assassinstat == True:
+                allspritegroup.add(self.sector)
+                self.managesector(ws ,hs)
 
+            else: 
+                allspritegroup.remove(self.sector)
+                self.magestat == False
 
-    def roles(self, surf):
-        if self.role == 'assassin' and self.assassinstat == True:
-            self.vect = pygame.Vector2((self.x, self.y))
-            self.sector = sector.Sector(self.vect)
-            self.sector.update(surf)
 
         if self.role == 'innocent':
+            allspritegroup.remove(self.sector)
             self.assassinstat == False
             self.magestat == False
 
         if self.role == 'mage':
+            allspritegroup.remove(self.sector)
             self.assassinstat == False
+
+    def managesector(self, ws ,hs):
+        self.vectsize = pygame.Vector2((ws//2, hs//2))
+        self.vectsect = pygame.Vector2(self.pos)
+        self.sector.update(self.vectsize)
 
     def perdre_vie(self):
         self.vie -= 1

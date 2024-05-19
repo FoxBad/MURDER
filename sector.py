@@ -15,15 +15,20 @@ def rotate_on_pivot(image, angle, pivot, origin):
     return surf, rect
 
 class Sector(pygame.sprite.Sprite):
-    def __init__(self, pivot):
+    def __init__(self, pivot, allspritegroup, player):
+        super().__init__(allspritegroup)
         self.pivot = pivot
-        self.pos = pivot + (70, 0)
+        self.player = player
+        self.pos = self.player.pos + (70, 0)
         self.image_orig = sector
         self.image = self.image_orig
         self.rect = self.image.get_rect(center = self.pos)
 
         
-    def update(self, surf):
+    def update(self, pivot):
+
+        self.pivot = pivot
+        self.pos = self.player.pos + (70, 0)
         
         mouse_pos = pygame.Vector2(pygame.mouse.get_pos())
         
@@ -34,4 +39,3 @@ class Sector(pygame.sprite.Sprite):
 
         self.mask = pygame.mask.from_surface(self.image)
     
-        surf.blit(self.image, self.rect)

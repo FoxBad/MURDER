@@ -33,9 +33,6 @@ def winsize():
 winsize()
 
 
-#-------------------------------CLASS-----------------------------
-
-
 #-------------------------------TILED-----------------------------
 
 
@@ -86,10 +83,11 @@ coinsgroup = pygame.sprite.Group()
 
 allsprite = pygame.sprite.Group()
 
-
 CameraGroup = camera.Camera()
-M1 = player.Player(ws*5 // 20, hs*4 // 20, 100, 100, 4,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d, allsprite, players_group, CameraGroup, innocent)
-#M2 = player.Player(ws*10 // 20, hs*4 // 20, 100, 100, 4, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT, players_group, innocent)
+M1 = player.Player(100, 100, 4,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d, allsprite, players_group, innocent, ws, hs)
+CameraGroup.add(M1)
+
+M2 = player.Player(100, 100, 4, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT, allsprite, players_group, innocent, ws, hs)
 
 #-------------------------------OTHER FUNCTION-----------------------------
 
@@ -311,26 +309,28 @@ def set_menu():
 
 
 def playermanage():
+    
+    CameraGroup.custom_draw(M1 , layer1_group, layer2_group, screen, allsprite)
+
 
     for p in players_group:
 
         p.update(layer2_group)
-        p.orientation(screen)
-        CameraGroup.custom_draw(p , layer1_group, layer2_group, screen, allsprite)
+                
+        p.roles(allsprite, ws ,hs)
 
-
-        p.roles(screen) 
+        p.orientation(ws , hs )
 
         p.checkalive(deathgroup, allsprite)
 
-        draw_text(str(p.role), pygame.font.Font(None, 30), BLACK, screen, p.x, p.y-80)
+        draw_text(str(M1.role), pygame.font.Font(None, 30), BLACK, screen, ws//2, hs//2-80)
 
-        draw_text(str(p.coins) + " $", pygame.font.Font(None, 30), BLACK, screen, p.x, p.y-60)
+        draw_text(str(M1.coins) + " $", pygame.font.Font(None, 30), BLACK, screen, ws//2, hs//2-60)
             
-        draw_text(str(p.vie), pygame.font.Font(None, 30), BLACK, screen, p.x+30, p.y-60)
+        draw_text(str(M1.vie), pygame.font.Font(None, 30), BLACK, screen, ws//2+30, hs//2-60)
         
         if p.role == 'mage':
-            draw_text(str(p.bullet) + " •", pygame.font.Font(None, 30), BLACK, screen, p.x-30, p.y-60)
+            draw_text(str(M1.bullet) + " •", pygame.font.Font(None, 30), BLACK, screen, ws//2-30, hs//2-60)
     
 
 def bulletsmanage():
@@ -338,8 +338,7 @@ def bulletsmanage():
     for player in players_group:
         for bullet in player.bulletlist:
 
-
-            bullet.update(screen)
+            bullet.update()
 
             otherplayer = players_group.copy()
             otherplayer.remove(player)
@@ -348,14 +347,14 @@ def bulletsmanage():
             for player2 in otherplayer:
                 if pygame.sprite.collide_mask(bullet, player2):
                     player2.perdre_vie()
-                    player.bulletlist.remove(bullet)
+                    bullet.kill()
 
-            if bullet.x < 0 or bullet.x > 1920 or bullet.y < 0 or bullet.y > 1080:
-                player.bulletlist.remove(bullet)
+            if bullet.x < 0 or bullet.x > 4400 or bullet.y < 0 or bullet.y > 4400:
+                bullet.kill()
 
             for sprite in layer2_group:
                 if pygame.sprite.collide_mask(bullet, sprite):
-                    player.bulletlist.remove(bullet)
+                    bullet.kill()
             
             if player.bullet == 0:
                 player.role = 'innocent'
@@ -363,12 +362,11 @@ def bulletsmanage():
                 player.magestat = False
 
 
-
 def coinsmanage():
     for player in players_group:
         for coin in coinsgroup:
             if pygame.sprite.collide_mask(player, coin):
-                coinsgroup.remove(coin)
+                coin.kill()
                 player.coins += 1
             
 
@@ -377,7 +375,7 @@ def coinsmanage():
                 player.coins -= 10
                 player.bullet = 3
 
-            if player.coins >=10 :
+            if player.coins >=10 : 
                 player.role = 'mage'
                 player.coins -= 10
                 player.bullet = 3
@@ -386,8 +384,8 @@ def coinsmanage():
 def clock():
     global start_ticks
     seconds=(pygame.time.get_ticks()-start_ticks)/1000 #calculate how many seconds
-    if seconds>5: # if more than 10 seconds close the game
-        CoinsC(allsprite, coinsgroup, ws, hs)
+    if seconds>3 and len(coinsgroup) < 50 : # if more than 10 seconds close the game
+        CoinsC(allsprite, coinsgroup)
         start_ticks=pygame.time.get_ticks() #starter tick
 
         
@@ -426,7 +424,7 @@ def event():
 
 
             if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and player.role == 'mage' and player.magestat == True and player.bullet > 0:
-                bullet.Bullet(player, player.bulletlist)
+                bullet.Bullet(player, allsprite, player.bulletlist, ws ,hs)
                 player.bullet -= 1
             
 
@@ -434,6 +432,7 @@ def event():
             if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and player.role == "assassin" and player.assassinstat == True:
 
                 otherplayer = players_group.copy()
+
                 otherplayer.remove(player)
                 
                 for player2 in otherplayer:
