@@ -22,24 +22,25 @@ def handle_client(client_socket, client_address):
     print(f"Connexion acceptée de {client_address}")
 
     sent = json.dumps(client_address[1])
-    client_socket.send((sent).encode())
-
-    players[client_address[1]] = {"playerid": client_address[1]}
+    client_socket.send(sent.encode())
+    players[client_address[1]] = {'playerid': client_address[1]}
 
     try:
         while True:
+
             # Recevoir la position du client
             receive = client_socket.recv(4096).decode()
+
             if not receive:
                 break
 
             data = json.loads(receive)
+
             players[client_address[1]] = data
 
             # Redistribuer la position à tous les clients connectés
-            for c, a in clients:
-                sent = json.dumps(players)
-                c.send(sent.encode())
+            sent = json.dumps(players)
+            client_socket.send(sent.encode())
 
     except Exception as e:
         print(f"Erreur: {e}")

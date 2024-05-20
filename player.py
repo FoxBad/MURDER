@@ -119,4 +119,5 @@ class Player(pygame.sprite.Sprite):
     def checkalive(self, group, allspritegroup):
         if self.etat == False:
             redcross.RedCross(self.pos, allspritegroup ,group)
+            self.sector.kill()
             self.kill()
