@@ -60,6 +60,6 @@ while True:
     print(f"Joueur connecté. Nombre total de joueurs: {currentPlayer}/{MAX_PLAYERS}")
 
     if currentPlayer == MAX_PLAYERS:
-
+        time.sleep(5)
         for client, address in clients:
             threading.Thread(target=handle_client, args=(client, address)).start()

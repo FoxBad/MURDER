@@ -38,6 +38,8 @@ def receive_message():
 
             del other_player_data[str(P.playerid)]
 
+            print(other_player_data)
+
 
         except json.JSONDecodeError as e:
             print("JSON decoding error:", e)
