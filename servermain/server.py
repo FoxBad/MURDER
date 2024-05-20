@@ -5,7 +5,7 @@ clients = []
 players = {}
 
 # Configuration du serveur
-HOST = '192.168.56.1'
+HOST = '192.168.1.18'
 PORT = 5050
 currentPlayer = 0
 MAX_PLAYERS = 2

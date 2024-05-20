@@ -1,7 +1,7 @@
 import socket, random
 import time, sys, json
 
-HOST = '192.168.56.1'
+HOST = '192.168.1.18'
 PORT = 5050
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
