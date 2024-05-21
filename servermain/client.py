@@ -35,7 +35,6 @@ def receive_message():
 
             data = json.loads(message)
             other_player_data = data
-
             del other_player_data[str(P.playerid)]
 
             print(other_player_data)

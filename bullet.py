@@ -11,7 +11,7 @@ class Bullet(pygame.sprite.Sprite):
         self.x = self.tireur.x
         self.y = self.tireur.y
         self.image = fireball
-        self.destx, self.desty = pygame.mouse.get_pos()
+        self.destx, self.desty = self.tireur.mpos
         self.speed = 20
         self.rect = self.image.get_rect(center=(self.x,self.y))  
 

@@ -1,60 +1,65 @@
 import socket
-from _thread import *
+import threading, time, json
 
-server = "172.20.10.2"
-port = 5555
+clients = []
+players = {}
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-try:
-    s.bind((server, port))
-except socket.error as e:
-    str(e)
-
-s.listen(3)
-print("Waiting for a connection, Server Started")
-
-def read_pos(str):
-    str = str.split(",")
-    return int(str[0]), int(str[1])
-
-
-def make_pos(tup):
-    return str(tup[0]) + "," + str(tup[1])
-
-pos = [(0,0),(100,100)]
-
-def threaded_client(conn, player):
-    conn.send(str.encode(make_pos(pos[player])))
-    reply = ""
-    while True:
-        try:
-            data = read_pos(conn.recv(2048).decode())
-            pos[player] = data
-
-            if not data:
-                print("Disconnected")
-                break
-            else:
-                if player == 1:
-                    reply = pos[0]
-                else:
-                    reply = pos[1]
-
-                print("Received: ", data)
-                print("Sending : ", reply)
-
-            conn.sendall(str.encode(make_pos(reply)))
-        except:
-            break
-
-    print("Lost connection")
-    conn.close()
-
+# Configuration du serveur
+HOST = '192.168.1.18'
+PORT = 5050
 currentPlayer = 0
-while True:
-    conn, addr = s.accept()
-    print("Connected to:", addr)
+MAX_PLAYERS = 2
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind((HOST, PORT))
+server.listen(MAX_PLAYERS) # Limite de 2 clients
 
-    start_new_thread(threaded_client, (conn, currentPlayer))
+print(f"Serveur en écoute sur {HOST}:{PORT}")
+
+# Fonction pour gérer les connexions des clients
+def handle_client(client_socket, client_address):
+    global currentPlayer
+
+    print(f"Connexion acceptée de {client_address}")
+
+    sent = json.dumps(client_address[1])
+    client_socket.send(sent.encode())
+    players[client_address[1]] = {'playerid': client_address[1]}
+
+    try:
+        while True:
+
+            # Recevoir la position du client
+            receive = client_socket.recv(4096).decode()
+
+            if not receive:
+                break
+
+            data = json.loads(receive)
+
+            players[client_address[1]] = data
+
+            # Redistribuer la position à tous les clients connectés
+            sent = json.dumps(players)
+            client_socket.send(sent.encode())
+
+    except Exception as e:
+        print(f"Erreur: {e}")
+    finally:
+        client_socket.close()
+        currentPlayer -= 1
+        del players[client_address[1]]
+        print(f"Connexion avec {client_address} fermée")
+
+
+while True:
+    # Accepter les connexions des clients
+    client_socket, client_address = server.accept()
+    clients.append((client_socket,client_address))
+
     currentPlayer += 1
+    print(f"Joueur connecté. Nombre total de joueurs: {currentPlayer}/{MAX_PLAYERS}")
+
+    if currentPlayer == MAX_PLAYERS:
+        time.sleep(5)
+        for client, address in clients:
+            threading.Thread(target=handle_client, args=(client, address)).start()

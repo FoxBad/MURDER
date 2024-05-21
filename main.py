@@ -84,10 +84,10 @@ coinsgroup = pygame.sprite.Group()
 allsprite = pygame.sprite.Group()
 
 CameraGroup = camera.Camera()
-M1 = player.Player(100, 100, 4,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d, allsprite, players_group, innocent, ws, hs)
+M1 = player.Player(100, 100, 4,pygame.K_z,pygame.K_s,pygame.K_q,pygame.K_d, allsprite, players_group, innocent, ws, hs, True)
 CameraGroup.add(M1)
 
-M2 = player.Player(100, 100, 4, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT, allsprite, players_group, innocent, ws, hs)
+M2 = player.Player(100, 100, 4, pygame.K_UP,pygame.K_DOWN,pygame.K_LEFT,pygame.K_RIGHT, allsprite, players_group, innocent, ws, hs, False)
 
 #-------------------------------OTHER FUNCTION-----------------------------
 
