@@ -23,7 +23,7 @@ def handle_client(client_socket, client_address):
 
     sent = json.dumps(client_address[1])
     client_socket.send(sent.encode())
-    players[client_address[1]] = {'playerid': client_address[1]}
+    players[client_address[1]] = {"state" : "LOADING", 'playerid': client_address[1]}
 
     try:
         while True:
@@ -60,6 +60,5 @@ while True:
     print(f"Joueur connecté. Nombre total de joueurs: {currentPlayer}/{MAX_PLAYERS}")
 
     if currentPlayer == MAX_PLAYERS:
-        time.sleep(5)
         for client, address in clients:
             threading.Thread(target=handle_client, args=(client, address)).start()
