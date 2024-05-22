@@ -54,7 +54,7 @@ def initserv():
 #-------------------------------TILED-----------------------------
 
 
-tmx_data = load_pygame(os.path.join("..", "assets", "map.tmx"))
+tmx_data = load_pygame(os.path.join("assets", "map.tmx"))
 layer1_group = pygame.sprite.Group()  # Groupe pour la première couche
 layer2_group = pygame.sprite.Group()  # Groupe pour la deuxième couche
 
@@ -62,9 +62,9 @@ for layer in tmx_data.visible_layers:
     if hasattr(layer, 'data'):
         for x, y, surf in layer.tiles():
             pos = (x * 128, y * 128)
-            if layer.name == '1':  # Si c'est la première couche
+            if layer.name == 'Tile Layer 1':  # Si c'est la première couche
                 tile.Tile(pos=pos, surf=surf, groups=layer1_group)
-            elif layer.name == '2':  # Si c'est la deuxième couche
+            elif layer.name == 'Tile Layer 2':  # Si c'est la deuxième couche
                 tile.Tile(pos=pos, surf=surf, groups=layer2_group)
 
     
