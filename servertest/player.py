@@ -88,6 +88,9 @@ class Player(pygame.sprite.Sprite):
                 if pygame.sprite.collide_rect(sprite, self):
                     self.x, self.y = self.prev_x, self.prev_y
 
+            if self.x < 0 or self.y < 0 or self.x > 9600 or self.y > 9600:
+                self.x, self.y = self.prev_x, self.prev_y
+
             self.vpos = pygame.Vector2(self.pos)
             self.pos = (self.x,self.y)
 

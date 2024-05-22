@@ -328,7 +328,7 @@ def bulletsmanage():
                     player2.perdre_vie()
                     bullet.kill()
 
-            if bullet.x < 0 or bullet.x > 4400 or bullet.y < 0 or bullet.y > 4400:
+            if bullet.x < 0 or bullet.x > 9600 or bullet.y < 0 or bullet.y > 9600:
                 bullet.kill()
 
             for sprite in layer2_group:
