@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="75" height="75" tilewidth="128" tileheight="128" infinite="0" nextlayerid="3" nextobjectid="1">
- <tileset firstgid="1" source="../Documents/GitHub/assets/tilset-final.tsx"/>
+ <tileset firstgid="1" source="tilset-final.tsx"/>
  <layer id="1" name="Tile Layer 1" width="75" height="75">
   <data encoding="csv">
 86,86,86,86,86,86,86,86,86,86,86,86,86,86,86,86,86,86,86,86,86,86,86,86,86,86,86,86,86,86,7,54,91,92,92,92,92,73,114,30,86,86,86,86,86,86,86,86,67,108,26,26,26,26,26,89,89,89,89,89,89,89,89,26,26,106,107,107,69,86,86,86,86,86,86,

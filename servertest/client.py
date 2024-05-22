@@ -54,7 +54,7 @@ def initserv():
 #-------------------------------TILED-----------------------------
 
 
-tmx_data = load_pygame(os.path.join("assets", "map.tmx"))
+tmx_data = load_pygame(os.path.join("..", "assets", "map.tmx"))
 layer1_group = pygame.sprite.Group()  # Groupe pour la première couche
 layer2_group = pygame.sprite.Group()  # Groupe pour la deuxième couche
 
@@ -226,8 +226,8 @@ def sync():
     P = player.Player(allsprite, players_group, innocent, ws, hs, True, data_playerid)
     CameraGroup.add(P)
 
-    for p in MAX_PLAYERS-1:
-        player.Player(allsprite, players_group, innocent, ws, hs, False, None)
+
+    P2 = player.Player(allsprite, players_group, innocent, ws, hs, False, None)
 
 
     syncing = True
