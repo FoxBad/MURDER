@@ -5,7 +5,7 @@
 import sys, os
 import pygame
 from pygame.locals import *
-import player, bullet, tile, camera
+import player, bullet, tile, camera, image, button
 from coins import CoinsC
 from pytmx.util_pygame import load_pygame
 import socket, random
@@ -22,6 +22,9 @@ info = pygame.display.Info()
 w = 1000
 h = 800
 
+global MAX_PLAYERS
+MAX_PLAYERS = 2
+
 pygame.display.set_caption("APEO - BETA")
 icon = pygame.image.load(os.path.join("assets", "logo2.png"))
 pygame.display.set_icon(icon)
@@ -37,18 +40,16 @@ winsize()
 #---------------------------INIT SERVER--------------------------
 
 
-HOST = '192.168.1.18'
+HOST = '192.168.1.21'
 PORT = 5050
-
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect((HOST, PORT))
 
 
 #---------------------------INIT SERVER--------------------------
 
-#Load id for main player 
-id = client.recv(4096).decode()
-data_playerid = json.loads(id)
+def initserv():
+    global client
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect((HOST, PORT))
 
 #-------------------------------TILED-----------------------------
 
@@ -94,20 +95,6 @@ mage  = pygame.transform.rotate(mage, 90)
 assassin = pygame.image.load(os.path.join("assets", "assassin.png"))
 assassin  = pygame.transform.rotate(assassin, 90)
 
-players_group = pygame.sprite.Group()
-deathgroup = pygame.sprite.Group()
-coinsgroup = pygame.sprite.Group()
-
-allsprite = pygame.sprite.Group()
-
-CameraGroup = camera.Camera()
-
-P = player.Player(allsprite, players_group, innocent, ws, hs, True, data_playerid)
-
-CameraGroup.add(P)
-
-P2 = player.Player(allsprite, players_group, innocent, ws, hs, False, None)
-
 #-------------------------------OTHER FUNCTION-----------------------------
 
 def draw_text(text, font, color, surface, x, y):
@@ -128,6 +115,56 @@ def tryquit():
     sys.exit()
 
 
+#-------------------------------MAIN MENU-----------------------------
+
+def main_menu():
+    global start_ticks
+    while True:
+
+        pos = pygame.mouse.get_pos()
+
+        winsize()
+
+        button_x = ws // 2
+        button_y = hs // 2
+
+        fond = image.Image(ws // 2, hs // 2, "back3.jpg", (ws,hs), screen)
+        
+        play_button = button.Button(button_x, button_y +50, "play.png", (button_width,button_height), screen)
+
+        quit_button = button.Button(button_x, button_y +250, "quit.png", (button_width,button_height), screen)
+
+        settings_button = button.Button(50, 50, "settings.png", (75, 75), screen)
+
+        logo = image.Image(ws // 2, hs // 5, "logo22.png", (300,300), screen)
+        
+
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                if play_button.rect.collidepoint(pos):
+                    start_ticks=pygame.time.get_ticks() #starter tick
+                    initserv()
+                    sync()
+
+                if quit_button.rect.collidepoint(pos):
+                    tryquit()
+
+
+
+            if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_f:
+                    if screen.get_flags() & FULLSCREEN:
+                        pygame.display.set_mode((w, h))
+                    else:
+                        pygame.display.set_mode((1920, 1080), FULLSCREEN)
+
+
+        pygame.display.update()
+
+
 #---------------------------SEND/RECEIVE FUNCTION----------------------
     
 
@@ -139,23 +176,28 @@ def send_update():
 def receive_message():
     global other_player_data
     message = client.recv(4096).decode()
+
     if message:
         try:
 
             data = json.loads(message)
             other_player_data = data
+
             del other_player_data[str(P.playerid)]
+
 
         except json.JSONDecodeError as e:
             print("JSON decoding error:", e)
     else:
         print("Empty message received")
 
-
 #-------------------------------JEU-----------------------------
 
 def updateotherplayer():
-        
+    
+
+
+
     for key in other_player_data:
 
         P2.playerid = other_player_data[key]["playerid"]
@@ -164,24 +206,47 @@ def updateotherplayer():
         P2.role = other_player_data[key]["role"]
         P2.assassinstat = other_player_data[key]["assassinstat"]
         P2.magestat = other_player_data[key]["magestat"]
-        P2.etat = other_player_data[key]["etat"]
-
-
+        #P2.etat = other_player_data[key]["etat"]
         
     
 def sync():
+    global players_group,deathgroup, coinsgroup, allsprite, CameraGroup, P, P2
+
+    #Load id for main player 
+    id = client.recv(4096).decode()
+    data_playerid = json.loads(id)
+
+
+    players_group = pygame.sprite.Group()
+    deathgroup = pygame.sprite.Group()
+    coinsgroup = pygame.sprite.Group()
+    allsprite = pygame.sprite.Group()
+    CameraGroup = camera.Camera()
+
+    P = player.Player(allsprite, players_group, innocent, ws, hs, True, data_playerid)
+    CameraGroup.add(P)
+
+    for p in MAX_PLAYERS-1:
+        player.Player(allsprite, players_group, innocent, ws, hs, False, None)
+
 
     syncing = True
     while syncing:
 
+        winsize()
+
+        screen.fill(BLACK)
+
+        draw_text("WAITING FOR PLAYERS", pygame.font.Font(None, 50), WHITE, screen, ws//2, hs//2)
+        draw_text(str(P.currentPlayer)+ "/"+ str(MAX_PLAYERS), pygame.font.Font(None, 50), WHITE, screen, ws//2, hs//2+50)
+
         send_update()
         receive_message()
         
-
         for key in other_player_data:
                         
-            if len(other_player_data[key]) < 8:
-                pass
+            if len(other_player_data[key]) < 9:
+                pass 
             
             else:
 
@@ -191,13 +256,32 @@ def sync():
                 P2.role = other_player_data[key]["role"]
                 P2.assassinstat = other_player_data[key]["assassinstat"]
                 P2.magestat = other_player_data[key]["magestat"]
-                P2.etat = other_player_data[key]["etat"]
+                #P2.etat = other_player_data[key]["etat"]
+                P2.currentPlayer = other_player_data[key]["currentPlayer"]
 
+                P.currentPlayer = other_player_data[key]["currentPlayer"]
                 P.data["state"] = "INGAME"
 
                 syncing = False
+                game()
 
 
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_f:
+                    if screen.get_flags() & FULLSCREEN:
+                        pygame.display.set_mode((w, h))
+                    else:
+                        pygame.display.set_mode((1920, 1080), FULLSCREEN)
+        
+        pygame.display.update()
+        
+        
+    
 
 
 def playermanage():
@@ -333,8 +417,6 @@ def event():
 def game():
     running = True
 
-    sync()
-
     while running:
        
         send_update()
@@ -357,5 +439,4 @@ def game():
 #-------------------------------START-----------------------------
 
 if __name__ == "__main__":
-    start_ticks=pygame.time.get_ticks() #starter tick
-    game()
+    main_menu()

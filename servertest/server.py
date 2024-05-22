@@ -5,7 +5,7 @@ clients = []
 players = {}
 
 # Configuration du serveur
-HOST = '192.168.1.18'
+HOST = '192.168.1.21'
 PORT = 5050
 currentPlayer = 0
 MAX_PLAYERS = 2
@@ -23,7 +23,7 @@ def handle_client(client_socket, client_address):
 
     sent = json.dumps(client_address[1])
     client_socket.send(sent.encode())
-    players[client_address[1]] = {"state" : "LOADING", 'playerid': client_address[1]}
+    players[client_address[1]] = {'playerid': client_address[1], "currentPlayer" : currentPlayer}
 
     try:
         while True:
@@ -38,6 +38,8 @@ def handle_client(client_socket, client_address):
 
             players[client_address[1]] = data
 
+            
+
             # Redistribuer la position à tous les clients connectés
             sent = json.dumps(players)
             client_socket.send(sent.encode())
@@ -47,7 +49,6 @@ def handle_client(client_socket, client_address):
     finally:
         client_socket.close()
         currentPlayer -= 1
-        del players[client_address[1]]
         print(f"Connexion avec {client_address} fermée")
 
 
@@ -59,6 +60,4 @@ while True:
     currentPlayer += 1
     print(f"Joueur connecté. Nombre total de joueurs: {currentPlayer}/{MAX_PLAYERS}")
 
-    if currentPlayer == MAX_PLAYERS:
-        for client, address in clients:
-            threading.Thread(target=handle_client, args=(client, address)).start()
+    threading.Thread(target=handle_client, args=(client_socket, client_address)).start()

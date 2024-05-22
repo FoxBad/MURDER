@@ -8,6 +8,8 @@ class Player(pygame.sprite.Sprite):
         self.main = main
 
         self.playerid = playerid
+        self.currentPlayer = 1
+        self.state = "LOADING"
 
         self.x = 2200
         self.y = 2200
@@ -44,7 +46,7 @@ class Player(pygame.sprite.Sprite):
         self.vpos = pygame.Vector2(self.pos)
         self.sector = sector.Sector(self.vpos, allspritegroup, self)
 
-        self.data = {"state" : "INGAME", "playerid" : self.playerid ,"role": self.role, "pos": self.pos, "mpos": self.mpos, "assassinstat" : self.assassinstat, "magestat" : self.magestat, "etat" : self.etat}
+        self.data = {"state" : self.state, "playerid" : self.playerid, "currentPlayer": self.currentPlayer ,"role": self.role, "pos": self.pos, "mpos": self.mpos, "assassinstat" : self.assassinstat, "magestat" : self.magestat, "etat" : self.etat}
 
 
 
@@ -77,12 +79,7 @@ class Player(pygame.sprite.Sprite):
                 self.y += self.vel
 
 
-            self.velx, self.vely = self.x - self.prev_x, self.y - self.prev_y
-            
-            self.pos = (self.x,self.y)
-            self.vpos = pygame.Vector2(self.pos)
-
-            
+            #self.velx, self.vely = self.x - self.prev_x, self.y - self.prev_y
             #self.rect = pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
             #self.rect = pygame.draw.rect(screen, BLACK, pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
         
@@ -90,10 +87,14 @@ class Player(pygame.sprite.Sprite):
             for sprite in collisiongroup:
                 if pygame.sprite.collide_rect(sprite, self):
                     self.x, self.y = self.prev_x, self.prev_y
+
+            self.vpos = pygame.Vector2(self.pos)
+            self.pos = (self.x,self.y)
+
             
 
     def update_data(self):
-        self.data = {"state" : "INGAME", "playerid" : self.playerid ,"role": self.role, "pos": self.pos, "mpos": self.mpos, "assassinstat" : self.assassinstat, "magestat" : self.magestat, "etat" : self.etat}
+        self.data = {"state" : self.state, "playerid" : self.playerid, "currentPlayer": self.currentPlayer ,"role": self.role, "pos": self.pos, "mpos": self.mpos, "assassinstat" : self.assassinstat, "magestat" : self.magestat, "etat" : self.etat}
                    
 
 
