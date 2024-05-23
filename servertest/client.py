@@ -195,7 +195,11 @@ def receive_message():
 
 def updateotherplayer():
     
+    
+    i = 0
+
     global rx, ry
+
     for key in other_player_data:
         
         if key == "rcoins":
@@ -204,6 +208,20 @@ def updateotherplayer():
             ry = other_player_data[key][1]
 
         else:
+            for key2 in other_player_data[key]:
+                
+                print(opgroup[i].key2, other_player_data[key][key2] )
+
+                opgroup[i].key2 =  other_player_data[key][key2]
+
+            i+=1
+
+            
+
+
+            P.currentPlayer = other_player_data[key]["currentPlayer"]
+
+            '''
             P2.playerid = other_player_data[key]["playerid"]
             P2.pos = other_player_data[key]["pos"]
             P2.mpos = other_player_data[key]["mpos"]
@@ -213,15 +231,15 @@ def updateotherplayer():
             P2.isshooting = other_player_data[key]["isshooting"]
             #P2.etat = other_player_data[key]["etat"]
             P2.currentPlayer = other_player_data[key]["currentPlayer"]
+            '''
 
-            P.currentPlayer = other_player_data[key]["currentPlayer"]
     
     
 
         
     
 def sync():
-    global players_group,deathgroup, coinsgroup, allsprite, CameraGroup, P, P2
+    global players_group,deathgroup, coinsgroup, allsprite, CameraGroup, P, opgroup
 
     #Load id for main player 
     id = client.recv(4096).decode()
@@ -233,13 +251,16 @@ def sync():
     coinsgroup = pygame.sprite.Group()
     allsprite = pygame.sprite.Group()
     CameraGroup = camera.Camera()
+    opgroup = []
 
     P = player.Player(allsprite, players_group, ws, hs, True, data_playerid)
     CameraGroup.add(P)
 
 
-    P2 = player.Player(allsprite, players_group, ws, hs, False, None)
+    for i in range(1, MAX_PLAYERS):
+        opgroup.append(player.Player(allsprite, players_group, ws, hs, False, None))
 
+        
 
     syncing = True
     while syncing:
@@ -253,14 +274,21 @@ def sync():
 
         send_update()
         receive_message()
-        
+
+        i = 0
+
         for key in other_player_data:
                         
             if len(other_player_data[key]) < 10:
                 pass 
             
             else:
+                for key2 in other_player_data[key]:
+                    opgroup[i].key2 =  other_player_data[key][key2]
+                i+=1
+                
 
+                '''
                 P2.playerid = other_player_data[key]["playerid"]
                 P2.pos = other_player_data[key]["pos"]
                 P2.mpos = other_player_data[key]["mpos"]
@@ -270,13 +298,13 @@ def sync():
                 P2.isshooting = other_player_data[key]["isshooting"]
                 #P2.etat = other_player_data[key]["etat"]
                 P2.currentPlayer = other_player_data[key]["currentPlayer"]
+                '''
+                if i == MAX_PLAYERS-1:
+                    P.currentPlayer = other_player_data[key]["currentPlayer"]
+                    P.data["state"] = "INGAME"
 
-
-                P.currentPlayer = other_player_data[key]["currentPlayer"]
-                P.data["state"] = "INGAME"
-
-                syncing = False
-                game()
+                    syncing = False
+                    game()
 
 
         for e in pygame.event.get():
