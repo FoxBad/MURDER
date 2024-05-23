@@ -40,7 +40,7 @@ winsize()
 #---------------------------INIT SERVER--------------------------
 
 
-HOST = '192.168.1.21'
+HOST = '192.168.56.1'
 PORT = 5050
 
 
@@ -195,18 +195,29 @@ def receive_message():
 
 def updateotherplayer():
     
-
-
-
+    global rx, ry
     for key in other_player_data:
+        
+        if key == "rcoins":
 
-        P2.playerid = other_player_data[key]["playerid"]
-        P2.pos = other_player_data[key]["pos"]
-        P2.mpos = other_player_data[key]["mpos"]
-        P2.role = other_player_data[key]["role"]
-        P2.assassinstat = other_player_data[key]["assassinstat"]
-        P2.magestat = other_player_data[key]["magestat"]
-        #P2.etat = other_player_data[key]["etat"]
+            rx = other_player_data[key][0]
+            ry = other_player_data[key][1]
+
+        else:
+            P2.playerid = other_player_data[key]["playerid"]
+            P2.pos = other_player_data[key]["pos"]
+            P2.mpos = other_player_data[key]["mpos"]
+            P2.role = other_player_data[key]["role"]
+            P2.assassinstat = other_player_data[key]["assassinstat"]
+            P2.magestat = other_player_data[key]["magestat"]
+            P2.isshooting = other_player_data[key]["isshooting"]
+            #P2.etat = other_player_data[key]["etat"]
+            P2.currentPlayer = other_player_data[key]["currentPlayer"]
+
+            P.currentPlayer = other_player_data[key]["currentPlayer"]
+    
+    
+
         
     
 def sync():
@@ -223,11 +234,11 @@ def sync():
     allsprite = pygame.sprite.Group()
     CameraGroup = camera.Camera()
 
-    P = player.Player(allsprite, players_group, innocent, ws, hs, True, data_playerid)
+    P = player.Player(allsprite, players_group, ws, hs, True, data_playerid)
     CameraGroup.add(P)
 
 
-    P2 = player.Player(allsprite, players_group, innocent, ws, hs, False, None)
+    P2 = player.Player(allsprite, players_group, ws, hs, False, None)
 
 
     syncing = True
@@ -245,7 +256,7 @@ def sync():
         
         for key in other_player_data:
                         
-            if len(other_player_data[key]) < 9:
+            if len(other_player_data[key]) < 10:
                 pass 
             
             else:
@@ -256,8 +267,10 @@ def sync():
                 P2.role = other_player_data[key]["role"]
                 P2.assassinstat = other_player_data[key]["assassinstat"]
                 P2.magestat = other_player_data[key]["magestat"]
+                P2.isshooting = other_player_data[key]["isshooting"]
                 #P2.etat = other_player_data[key]["etat"]
                 P2.currentPlayer = other_player_data[key]["currentPlayer"]
+
 
                 P.currentPlayer = other_player_data[key]["currentPlayer"]
                 P.data["state"] = "INGAME"
@@ -299,7 +312,9 @@ def playermanage():
 
         p.checkalive(deathgroup, allsprite)
 
-        p.update_data()
+        p.isshoot(players_group, allsprite, ws, hs)
+
+        P.update_data()
 
 
     draw_text(str(P.role), pygame.font.Font(None, 30), BLACK, screen, ws//2, hs//2-80)
@@ -364,52 +379,42 @@ def clock():
     global start_ticks
     seconds=(pygame.time.get_ticks()-start_ticks)/1000 #calculate how many seconds
     if seconds>3 and len(coinsgroup) < 50 : # if more than 10 seconds close the game
-        CoinsC(allsprite, coinsgroup)
+        CoinsC(allsprite, coinsgroup, rx, ry)
         start_ticks=pygame.time.get_ticks() #starter tick
 
+                 
         
 
 def event():
+            
     for e in pygame.event.get():
+
         if e.type == QUIT:
             pygame.quit()
             sys.exit()
-            
-        
+
         if e.type == pygame.KEYDOWN:
 
-
             if e.key == pygame.K_e and P.role == "assassin":
-                P.base_img = assassin
                 P.assassinstat = True
             if e.key == pygame.K_r and P.role == "assassin":
-                P.base_img = innocent
                 P.assassinstat = False
             
 
             if e.key == pygame.K_e and P.role == "mage":
-                P.base_img = mage
                 P.magestat = True
             if e.key == pygame.K_r and P.role == "mage":
-                P.base_img = innocent
                 P.magestat = False
-                
+                    
 
 
         if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and P.role == 'mage' and P.magestat == True and P.bullet > 0:
-            bullet.Bullet(P, allsprite, P.bulletlist, ws ,hs)
-            P.bullet -= 1
-        
+            P.isshooting = True
 
 
         if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and P.role == "assassin" and P.assassinstat == True:
-            otherplayer = players_group.copy()
-            otherplayer.remove(P)
-            
-            for player2 in otherplayer:
-                if pygame.sprite.collide_mask(P.sector, player2):
-                    player2.perdre_vie()
-                    
+            P.isshooting = True
+                        
 
 #-----------------------------MAIN GAME LOOP-----------------------------
 
@@ -417,19 +422,23 @@ def event():
 def game():
     running = True
 
-    while running:
-       
+    while running:  
+        screen.fill(WHITE)
+        winsize()
+
+        P.update_data()
+
         send_update()
         receive_message()
 
         updateotherplayer()
 
-        screen.fill(WHITE)
         clock()
         playermanage()
         bulletsmanage()
         coinsmanage()
-        winsize()
+        
+
         event()
 
         pygame.display.flip()

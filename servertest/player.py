@@ -1,7 +1,17 @@
-import pygame, random, sector, math, redcross, os
+import pygame, random, sector, math, redcross, os, bullet
+
+
+innocent = pygame.image.load(os.path.join("assets", "innocent.png"))
+innocent  = pygame.transform.rotate(innocent, 90)
+
+mage = pygame.image.load(os.path.join("assets", "mage.png"))
+mage  = pygame.transform.rotate(mage, 90)
+
+assassin = pygame.image.load(os.path.join("assets", "assassin.png"))
+assassin  = pygame.transform.rotate(assassin, 90)
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, allspritegroup, groups, base_img, ws ,hs, main, playerid):
+    def __init__(self, allspritegroup, groups, ws ,hs, main, playerid):
         super().__init__(allspritegroup)
         groups.add(self)
 
@@ -25,7 +35,7 @@ class Player(pygame.sprite.Sprite):
 
         self.vel = 4
 
-        self.role = self.choisir_role()
+        self.role = 'assassin'
 
         self.assassinstat = False
         self.magestat = False
@@ -35,8 +45,9 @@ class Player(pygame.sprite.Sprite):
 
         self.bulletlist = pygame.sprite.Group()
         self.bullet = 3
+        self.isshooting = False
 
-        self.base_img = base_img
+        self.base_img = innocent
         self.image = pygame.transform.scale(self.base_img, (self.sx, self.sy))
         self.rect = self.image.get_rect()
 
@@ -46,8 +57,7 @@ class Player(pygame.sprite.Sprite):
         self.vpos = pygame.Vector2(self.pos)
         self.sector = sector.Sector(self.vpos, allspritegroup, self)
 
-        self.data = {"state" : self.state, "playerid" : self.playerid, "currentPlayer": self.currentPlayer ,"role": self.role, "pos": self.pos, "mpos": self.mpos, "assassinstat" : self.assassinstat, "magestat" : self.magestat, "etat" : self.etat}
-
+        self.data = {"state" : self.state, "playerid" : self.playerid, "currentPlayer": self.currentPlayer,"role": self.role, "pos": self.pos, "mpos": self.mpos, "assassinstat" : self.assassinstat, "magestat" : self.magestat, "etat" : self.etat, "isshooting": self.isshooting}
 
 
     def choisir_role(self):
@@ -97,9 +107,24 @@ class Player(pygame.sprite.Sprite):
             
 
     def update_data(self):
-        self.data = {"state" : self.state, "playerid" : self.playerid, "currentPlayer": self.currentPlayer ,"role": self.role, "pos": self.pos, "mpos": self.mpos, "assassinstat" : self.assassinstat, "magestat" : self.magestat, "etat" : self.etat}
+        self.data = {"state" : self.state, "playerid" : self.playerid, "currentPlayer": self.currentPlayer ,"role": self.role, "pos": self.pos, "mpos": self.mpos, "assassinstat" : self.assassinstat, "magestat" : self.magestat, "etat" : self.etat, "isshooting": self.isshooting}
                    
+    def isshoot(self, playergroup, allsprite, ws , hs):
+        if self.isshooting == True and self.role == 'assassin' and self.assassinstat == True:
+            otherplayer = playergroup.copy()
+            otherplayer.remove(self)
+            
+            for player2 in otherplayer:
+                if pygame.sprite.collide_mask(self.sector, player2):
+                    player2.perdre_vie()
+            self.isshooting = False
+            
+        
+        if self.isshooting == True and self.role == 'mage' and self.magestat == True:
+            bullet.Bullet(self, allsprite, self.bulletlist, ws ,hs)
+            self.bullet -= 1
 
+            self.isshooting = False
 
     def orientation(self, ws ,hs):
         
@@ -117,22 +142,30 @@ class Player(pygame.sprite.Sprite):
 
         if self.role == 'assassin':
             if self.assassinstat == True:
+                self.base_img = assassin
                 allspritegroup.add(self.sector)
                 self.managesector(ws ,hs)
 
             else: 
                 allspritegroup.remove(self.sector)
-                self.magestat == False
-
+                self.base_img = innocent
+                
 
         if self.role == 'innocent':
             allspritegroup.remove(self.sector)
-            self.assassinstat == False
+            self.base_img = innocent
             self.magestat == False
+            self.assassinstat == False
+
 
         if self.role == 'mage':
             allspritegroup.remove(self.sector)
-            self.assassinstat == False
+            if self.magestat == True:
+                self.base_img = mage
+            else:
+                self.base_img = innocent
+
+
 
     def managesector(self, ws ,hs):
         self.vectsize = pygame.Vector2((ws//2, hs//2))

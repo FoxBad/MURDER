@@ -1,11 +1,11 @@
 import socket
-import threading, time, json
+import threading, time, json, random
 
 clients = []
 players = {}
 
 # Configuration du serveur
-HOST = '192.168.1.21'
+HOST = '192.168.56.1'
 PORT = 5050
 currentPlayer = 0
 MAX_PLAYERS = 2
@@ -37,6 +37,7 @@ def handle_client(client_socket, client_address):
             data = json.loads(receive)
 
             players[client_address[1]] = data
+            players["rcoins"] = (random.randint(0, 9600), random.randint(0, 9600))
 
             
 
