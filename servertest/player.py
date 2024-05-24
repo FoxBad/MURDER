@@ -11,7 +11,7 @@ assassin = pygame.image.load(os.path.join("assets", "assassin.png"))
 assassin  = pygame.transform.rotate(assassin, 90)
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, allspritegroup, groups, ws ,hs, main, playerid):
+    def __init__(self, allspritegroup, groups, ws ,hs, main, playerid, role):
         super().__init__(allspritegroup)
         groups.add(self)
 
@@ -35,7 +35,7 @@ class Player(pygame.sprite.Sprite):
 
         self.vel = 4
 
-        self.role = 'assassin'
+        self.role = role
 
         self.assassinstat = False
         self.magestat = False
@@ -56,6 +56,7 @@ class Player(pygame.sprite.Sprite):
         self.vectsize = pygame.Vector2((ws//2, hs//2))
         self.vpos = pygame.Vector2(self.pos)
         self.sector = sector.Sector(self.vpos, allspritegroup, self)
+
 
         self.data = {"state" : self.state, "playerid" : self.playerid, "currentPlayer": self.currentPlayer,"role": self.role, "pos": self.pos, "mpos": self.mpos, "assassinstat" : self.assassinstat, "magestat" : self.magestat, "etat" : self.etat, "isshooting": self.isshooting}
 

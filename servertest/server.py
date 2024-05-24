@@ -3,6 +3,7 @@ import threading, time, json, random
 
 clients = []
 players = {}
+roles = ["assassin", "innocent", "mage"]
 
 # Configuration du serveur
 HOST = '192.168.56.1'
@@ -21,9 +22,13 @@ def handle_client(client_socket, client_address):
 
     print(f"Connexion acceptée de {client_address}")
 
-    sent = json.dumps(client_address[1])
+
+    role = random.choice(roles)
+    roles.remove(role)
+
+    sent = json.dumps({"playerid" : client_address[1], "role" : role})
     client_socket.send(sent.encode())
-    players[client_address[1]] = {'playerid': client_address[1], "currentPlayer" : currentPlayer}
+    players[client_address[1]] = {'playerid': client_address[1], "currentPlayer" : currentPlayer, "role" : role}
 
     try:
         while True:

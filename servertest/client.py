@@ -226,9 +226,13 @@ def sync():
     global players_group,deathgroup, coinsgroup, allsprite, CameraGroup, P, opgroup
 
     #Load id for main player 
-    id = client.recv(4096).decode()
-    data_playerid = json.loads(id)
+    pre = client.recv(4096).decode()
+    predatas = json.loads(pre)
 
+
+    id = list(predatas.values())[0]
+    role = list(predatas.values())[1]
+    
 
     players_group = pygame.sprite.Group()
     deathgroup = pygame.sprite.Group()
@@ -237,12 +241,13 @@ def sync():
     CameraGroup = camera.Camera()
     opgroup = []
 
-    P = player.Player(allsprite, players_group, ws, hs, True, data_playerid)
+    P = player.Player(allsprite, players_group, ws, hs, True, id , role)
+
     CameraGroup.add(P)
 
 
     for i in range(1, MAX_PLAYERS):
-        opgroup.append(player.Player(allsprite, players_group, ws, hs, False, None))
+        opgroup.append(player.Player(allsprite, players_group, ws, hs, False, None, None))
 
         
 
