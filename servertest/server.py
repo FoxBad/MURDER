@@ -8,7 +8,7 @@ players = {}
 HOST = '192.168.56.1'
 PORT = 5050
 currentPlayer = 0
-MAX_PLAYERS = 2
+MAX_PLAYERS = 3
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((HOST, PORT))
 server.listen(MAX_PLAYERS) # Limite de 2 clients
@@ -50,6 +50,7 @@ def handle_client(client_socket, client_address):
     finally:
         client_socket.close()
         currentPlayer -= 1
+        del players[client_address[1]]
         print(f"Connexion avec {client_address} fermée")
 
 
