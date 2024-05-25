@@ -19,7 +19,7 @@ fps = 120
 fpsClock = pygame.time.Clock()
 
 info = pygame.display.Info()
-w = 1000
+w = 600
 h = 800
 
 global MAX_PLAYERS
@@ -29,7 +29,7 @@ pygame.display.set_caption("APEO - BETA")
 icon = pygame.image.load(os.path.join("assets", "logo2.png"))
 pygame.display.set_icon(icon)
 
-screen = pygame.display.set_mode((w, h))
+screen = pygame.display.set_mode((w, h), RESIZABLE)
 
 def winsize():
     global ws, hs
