@@ -23,7 +23,7 @@ w = 600
 h = 800
 
 global MAX_PLAYERS
-MAX_PLAYERS = 3
+MAX_PLAYERS = 2
 
 pygame.display.set_caption("APEO - BETA")
 icon = pygame.image.load(os.path.join("assets", "logo2.png"))
@@ -229,11 +229,10 @@ def sync():
     pre = client.recv(4096).decode()
     predatas = json.loads(pre)
 
-
     id = list(predatas.values())[0]
     role = list(predatas.values())[1]
+    spawn = list(predatas.values())[2]
     
-
     players_group = pygame.sprite.Group()
     deathgroup = pygame.sprite.Group()
     coinsgroup = pygame.sprite.Group()
@@ -241,13 +240,12 @@ def sync():
     CameraGroup = camera.Camera()
     opgroup = []
 
-    P = player.Player(allsprite, players_group, ws, hs, True, id , role)
-
+    P = player.Player(allsprite, players_group, ws, hs, spawn[0], spawn[1], True, id , role)
     CameraGroup.add(P)
 
 
     for i in range(1, MAX_PLAYERS):
-        opgroup.append(player.Player(allsprite, players_group, ws, hs, False, None, None))
+        opgroup.append(player.Player(allsprite, players_group, ws, hs, 0, 0, False, None, None))
 
         
 
@@ -280,12 +278,10 @@ def sync():
                 for key2 in other_player_data[key]:
                     setattr(opgroup[i], key2, other_player_data[key][key2])
                 i+=1
-
-                
                 
 
                 if i == MAX_PLAYERS-1:
-                    P.data["state"] = "INGAME"
+                    P.state = "WAIT"
 
                     syncing = False
                     game()
@@ -393,6 +389,15 @@ def clock():
     if seconds>3 and len(coinsgroup) < 50 : # if more than 10 seconds close the game
         CoinsC(allsprite, coinsgroup, rx, ry)
         start_ticks=pygame.time.get_ticks() #starter tick
+        P.state = "READY"
+
+    if len(coinsgroup) == 50:
+        print("ahaha")
+        P.state = "WAIT"
+
+    if seconds < 3:
+        P.state = "WAIT"
+
 
                  
         

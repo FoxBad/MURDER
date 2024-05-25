@@ -4,17 +4,25 @@ import threading, time, json, random
 clients = []
 players = {}
 roles = ["assassin", "innocent", "mage"]
+spawns = [(8000, 3200), (6500, 6700), (1600, 1000)]
+
+
+coins = []
+for i in range(0,200):
+    coins.append((random.randint(0, 9600), random.randint(0, 9600)))
 
 # Configuration du serveur
 HOST = '192.168.56.1'
 PORT = 5050
 currentPlayer = 0
-MAX_PLAYERS = 3
+MAX_PLAYERS = 2
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((HOST, PORT))
 server.listen(MAX_PLAYERS) # Limite de 2 clients
 
 print(f"Serveur en écoute sur {HOST}:{PORT}")
+
+
 
 # Fonction pour gérer les connexions des clients
 def handle_client(client_socket, client_address):
@@ -26,13 +34,19 @@ def handle_client(client_socket, client_address):
     role = random.choice(roles)
     roles.remove(role)
 
-    sent = json.dumps({"playerid" : client_address[1], "role" : role})
+    spawn = random.choice(spawns)
+    spawns.remove(spawn)
+
+    sent = json.dumps({"playerid" : client_address[1], "role" : role, "pos" : spawn})
     client_socket.send(sent.encode())
-    players[client_address[1]] = {'playerid': client_address[1], "currentPlayer" : currentPlayer, "role" : role}
+    
+    players[client_address[1]] = {}
+
+    k=0
 
     try:
         while True:
-
+            
             # Recevoir la position du client
             receive = client_socket.recv(4096).decode()
 
@@ -42,9 +56,12 @@ def handle_client(client_socket, client_address):
             data = json.loads(receive)
 
             players[client_address[1]] = data
-            players["rcoins"] = (random.randint(0, 9600), random.randint(0, 9600))
 
-            
+
+            if players[client_address[1]]["state"] == "READY":
+                k+=1
+
+            players["rcoins"] = coins[k]
 
             # Redistribuer la position à tous les clients connectés
             sent = json.dumps(players)

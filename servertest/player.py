@@ -11,7 +11,7 @@ assassin = pygame.image.load(os.path.join("assets", "assassin.png"))
 assassin  = pygame.transform.rotate(assassin, 90)
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, allspritegroup, groups, ws ,hs, main, playerid, role):
+    def __init__(self, allspritegroup, groups, ws ,hs, x, y, main, playerid, role):
         super().__init__(allspritegroup)
         groups.add(self)
 
@@ -19,10 +19,10 @@ class Player(pygame.sprite.Sprite):
 
         self.playerid = playerid
         self.currentPlayer = 1
-        self.state = "LOADING"
+        self.state = "WAIT"
 
-        self.x = 2200
-        self.y = 2200
+        self.x = x
+        self.y = y
         self.pos = (self.x,self.y)
 
         self.mpos = (0, 0)
@@ -33,7 +33,7 @@ class Player(pygame.sprite.Sprite):
 
         self.vie = 1
 
-        self.vel = 4
+        self.vel = 6
 
         self.role = role
 
@@ -138,6 +138,7 @@ class Player(pygame.sprite.Sprite):
         self.image  = pygame.transform.rotate(self.image, self.angle)
         self.rect  = self.image.get_rect(center = (self.x, self.y))
         self.mask = pygame.mask.from_surface(self.image)
+    
 
     def roles(self, allspritegroup, ws ,hs): 
 
