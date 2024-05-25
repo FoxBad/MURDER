@@ -139,6 +139,20 @@ class Player(pygame.sprite.Sprite):
         self.rect  = self.image.get_rect(center = (self.x, self.y))
         self.mask = pygame.mask.from_surface(self.image)
     
+    def dash(self, ws ,hs):
+        
+        self.destx, self.desty = self.mpos
+        vect = (self.destx - ws//2, self.desty - hs//2)
+        angle = math.atan2(vect[1], vect[0])
+        self.change_x = math.cos(angle) * 100
+        self.change_y = math.sin(angle) * 100
+
+        self.x += self.change_x
+        self.y += self.change_y
+
+        self.vpos = pygame.Vector2(self.pos)
+        self.pos = (self.x,self.y)
+        self.rect  = self.image.get_rect(center = (self.x, self.y))
 
     def roles(self, allspritegroup, ws ,hs): 
 

@@ -422,12 +422,15 @@ def event():
                 P.magestat = True
             if e.key == pygame.K_r and P.role == "mage":
                 P.magestat = False
+
+            
+            if e.key == pygame.K_SPACE and P.role == 'innocent':
+                P.dash(ws,hs)
                     
 
 
         if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and P.role == 'mage' and P.magestat == True and P.bullet > 0:
             P.isshooting = True
-
 
         if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and P.role == "assassin" and P.assassinstat == True:
             P.isshooting = True
