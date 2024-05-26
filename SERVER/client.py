@@ -255,7 +255,6 @@ def sync():
                 i+=1
             
                 if i == MAX_PLAYERS-1:
-                    P.state = "WAIT"
                     syncing = False
                     game()
 
