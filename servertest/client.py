@@ -1,6 +1,4 @@
-
 #-------------------------------IMPORT-----------------------------
-
 
 import sys, os
 import pygame
@@ -178,7 +176,7 @@ def receive_message():
     else:
         print("Empty message received")
 
-#-------------------------------JEU-----------------------------
+#-------------------------------UPDATE DATA------------------------------
 
 def updateotherplayer():
     global rx, ry
@@ -203,7 +201,7 @@ def updateotherplayer():
 
     
     
-
+#-------------------------------SYNC------------------------------
         
     
 def sync():
@@ -276,6 +274,31 @@ def sync():
         
         pygame.display.update()
         
+
+
+#-------------------------------CLOCK------------------------------
+
+
+def clock():
+    global start_ticks
+    seconds=(pygame.time.get_ticks()-start_ticks)/1000
+    if seconds>3 and len(coinsgroup) < 50: 
+        CoinsC(allsprite, coinsgroup, rx, ry)
+        start_ticks=pygame.time.get_ticks()
+        P.state = "READY"
+    if len(coinsgroup) == 50:
+        P.state = "WAIT"
+    if seconds < 3:
+        P.state = "WAIT"
+
+
+def clockdash():
+    global dashsec
+    dashsec=(pygame.time.get_ticks()-dashtick)/1000
+    if dashsec>= 4:
+        P.cooldash = False 
+
+#-------------------------------JEU------------------------------
 
 
 def playermanage():
@@ -358,29 +381,9 @@ def coinsmanage():
                 player.role = 'Mage'
                 player.coins -= 10
                 player.bullet = 3
-
-  
-def clock():
-    global start_ticks
-    seconds=(pygame.time.get_ticks()-start_ticks)/1000
-    if seconds>3 and len(coinsgroup) < 50: 
-        CoinsC(allsprite, coinsgroup, rx, ry)
-        start_ticks=pygame.time.get_ticks()
-        P.state = "READY"
-
-    if len(coinsgroup) == 50:
-        P.state = "WAIT"
-
-    if seconds < 3:
-        P.state = "WAIT"
-
-
-def clockdash():
-    global dashsec
-    dashsec=(pygame.time.get_ticks()-dashtick)/1000
-    if dashsec>= 4:
-        P.cooldash = False 
        
+
+#-------------------------------EVENTS------------------------------
 
 def event():
     
