@@ -1,4 +1,4 @@
-import pygame, random, sector, math, redcross, os, bullet
+import pygame, sector, math, redcross, os, bullet
 
 seconds = 4
 
@@ -200,6 +200,6 @@ class Player(pygame.sprite.Sprite):
         
     def checkalive(self, group, allspritegroup):
         if self.etat == False:
-            redcross.RedCross(self.pos, allspritegroup ,group)
+            redcross.RedCross(self.pos, allspritegroup, group)
             self.sector.kill()
             self.kill()

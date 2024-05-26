@@ -1,5 +1,5 @@
 import socket
-import threading, time, json, random
+import threading, json, random
 
 clients = []
 players = {}

@@ -5,11 +5,11 @@
 import sys, os
 import pygame
 from pygame.locals import *
-import player, bullet, tile, camera, image, button
+import player, tile, camera, image, button
 from coins import CoinsC
 from pytmx.util_pygame import load_pygame
-import socket, random
-import time, json
+import socket
+import json
 
 
 #---------------------------INIT PYGAME-------------------------
@@ -246,11 +246,11 @@ def sync():
         P.currentPlayer = len(other_player_data)
 
         i = 0
+        for key in other_player_data:
 
-        for key in other_player_data:     
             if len(other_player_data[key]) < 10:
                 pass 
-            
+
             else:
                 for key2 in other_player_data[key]:
                     setattr(opgroup[i], key2, other_player_data[key][key2])
@@ -276,14 +276,11 @@ def sync():
         
         pygame.display.update()
         
-        
-    
 
 
 def playermanage():
     
     CameraGroup.custom_draw(P , layer1_group, layer2_group, screen, allsprite)
-
 
     for p in players_group:
 
