@@ -170,7 +170,6 @@ class Player(pygame.sprite.Sprite):
             else: 
                 allspritegroup.remove(self.sector)
                 self.base_img = innocent
-                
 
         if self.role == 'Innocent':
             allspritegroup.remove(self.sector)
