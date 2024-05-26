@@ -159,11 +159,6 @@ class Player(pygame.sprite.Sprite):
         self.cooldash = True
 
 
-
-
-
-
-
     def roles(self, allspritegroup, ws ,hs): 
 
         if self.role == 'Assassin':
