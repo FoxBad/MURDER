@@ -1,5 +1,6 @@
 import pygame, random, sector, math, redcross, os, bullet
 
+seconds = 4
 
 innocent = pygame.image.load(os.path.join("assets", "innocent.png"))
 innocent  = pygame.transform.rotate(innocent, 90)
@@ -90,20 +91,35 @@ class Player(pygame.sprite.Sprite):
                 self.y += self.vel
 
 
-            #self.velx, self.vely = self.x - self.prev_x, self.y - self.prev_y
+            self.velx, self.vely = self.x - self.prev_x, self.y - self.prev_y
             #self.rect = pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
             #self.rect = pygame.draw.rect(screen, BLACK, pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
         
 
             for sprite in collisiongroup:
                 if pygame.sprite.collide_rect(sprite, self):
-                    self.x, self.y = self.prev_x, self.prev_y
+                    rect = sprite.rect
+                    if rect.collidepoint(self.rect.midbottom): 
+                        if self.vely > 0: 
+                            self.y -= self.vel + 1 
+                    if rect.collidepoint(self.rect.midtop): 
+                        if self.vely < 0: 
+                            self.y += self.vel + 1 
+                    if rect.collidepoint(self.rect.midright): 
+                        if self.velx > 0: 
+                            self.x -= self.vel + 1 
+                    if rect.collidepoint(self.rect.midleft):
+                        if self.velx < 0: 
+                            self.x += self.vel + 1 
+
 
             if self.x < 0 or self.y < 0 or self.x > 9600 or self.y > 9600:
                 self.x, self.y = self.prev_x, self.prev_y
 
             self.vpos = pygame.Vector2(self.pos)
             self.pos = (self.x,self.y)
+            self.rect  = self.image.get_rect(center = (self.x, self.y))
+
 
             
 
@@ -140,19 +156,33 @@ class Player(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
     
     def dash(self, ws ,hs):
-        
-        self.destx, self.desty = self.mpos
-        vect = (self.destx - ws//2, self.desty - hs//2)
-        angle = math.atan2(vect[1], vect[0])
-        self.change_x = math.cos(angle) * 300
-        self.change_y = math.sin(angle) * 300
 
-        self.x += self.change_x
-        self.y += self.change_y
+        global start_ticks, seconds
 
-        self.vpos = pygame.Vector2(self.pos)
-        self.pos = (self.x,self.y)
-        self.rect  = self.image.get_rect(center = (self.x, self.y))
+        if seconds>= 4 : # if more than 10 seconds close the game
+            start_ticks=pygame.time.get_ticks() #starter tick
+            seconds=(pygame.time.get_ticks()-start_ticks)/1000 #calculate how many seconds
+
+       
+            self.destx, self.desty = self.mpos
+            vect = (self.destx - ws//2, self.desty - hs//2)
+            angle = math.atan2(vect[1], vect[0])
+            self.change_x = math.cos(angle) * 500
+            self.change_y = math.sin(angle) * 500
+
+            self.x += self.change_x
+            self.y += self.change_y
+
+            self.vpos = pygame.Vector2(self.pos)
+            self.pos = (self.x,self.y)
+            self.rect  = self.image.get_rect(center = (self.x, self.y))
+
+        else:
+            seconds=(pygame.time.get_ticks()-start_ticks)/1000 #calculate how many seconds
+
+
+
+
 
     def roles(self, allspritegroup, ws ,hs): 
 

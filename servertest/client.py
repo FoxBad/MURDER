@@ -386,13 +386,12 @@ def coinsmanage():
 def clock():
     global start_ticks
     seconds=(pygame.time.get_ticks()-start_ticks)/1000 #calculate how many seconds
-    if seconds>3 and len(coinsgroup) < 50 : # if more than 10 seconds close the game
+    if seconds>3 and len(coinsgroup) < 50: # if more than 10 seconds close the game
         CoinsC(allsprite, coinsgroup, rx, ry)
         start_ticks=pygame.time.get_ticks() #starter tick
         P.state = "READY"
 
     if len(coinsgroup) == 50:
-        print("ahaha")
         P.state = "WAIT"
 
     if seconds < 3:
@@ -424,7 +423,7 @@ def event():
                 P.magestat = False
 
             
-            if e.key == pygame.K_SPACE and P.role == 'innocent':
+            if e.key == pygame.K_SPACE:
                 P.dash(ws,hs)
                     
 
@@ -443,7 +442,7 @@ def game():
     running = True
 
     while running:  
-        screen.fill(WHITE)
+        screen.fill(BLACK)
         winsize()
 
         P.update_data()
