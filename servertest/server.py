@@ -3,7 +3,7 @@ import threading, time, json, random
 
 clients = []
 players = {}
-roles = ["assassin", "innocent", "mage"]
+roles = ["Assassin", "Innocent", "Mage"]
 spawns = [(8000, 3200), (6500, 6700), (1600, 1000)]
 
 

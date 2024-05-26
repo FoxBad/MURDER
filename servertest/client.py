@@ -86,15 +86,6 @@ button_height = 150
 text_width = 500
 text_height = 200
 
-innocent = pygame.image.load(os.path.join("assets", "innocent.png"))
-innocent  = pygame.transform.rotate(innocent, 90)
-
-mage = pygame.image.load(os.path.join("assets", "mage.png"))
-mage  = pygame.transform.rotate(mage, 90)
-
-assassin = pygame.image.load(os.path.join("assets", "assassin.png"))
-assassin  = pygame.transform.rotate(assassin, 90)
-
 #-------------------------------OTHER FUNCTION-----------------------------
 
 def draw_text(text, font, color, surface, x, y):
@@ -118,7 +109,7 @@ def tryquit():
 #-------------------------------MAIN MENU-----------------------------
 
 def main_menu():
-    global start_ticks
+    global start_ticks, dashtick 
     while True:
 
         pos = pygame.mouse.get_pos()
@@ -134,8 +125,6 @@ def main_menu():
 
         quit_button = button.Button(button_x, button_y +250, "quit.png", (button_width,button_height), screen)
 
-        settings_button = button.Button(50, 50, "settings.png", (75, 75), screen)
-
         logo = image.Image(ws // 2, hs // 5, "logo22.png", (300,300), screen)
         
 
@@ -145,7 +134,8 @@ def main_menu():
                 sys.exit()
             if e.type == pygame.MOUSEBUTTONDOWN:
                 if play_button.rect.collidepoint(pos):
-                    start_ticks=pygame.time.get_ticks() #starter tick
+                    start_ticks=pygame.time.get_ticks()
+                    dashtick=pygame.time.get_ticks()  
                     initserv()
                     sync()
 
@@ -168,7 +158,6 @@ def main_menu():
 #---------------------------SEND/RECEIVE FUNCTION----------------------
     
 
-#fonction to send data
 def send_update():
     update = json.dumps(P.data)
     client.send(update.encode())
@@ -179,12 +168,10 @@ def receive_message():
 
     if message:
         try:
-
             data = json.loads(message)
             other_player_data = data
 
             del other_player_data[str(P.playerid)]
-
 
         except json.JSONDecodeError as e:
             print("JSON decoding error:", e)
@@ -194,13 +181,10 @@ def receive_message():
 #-------------------------------JEU-----------------------------
 
 def updateotherplayer():
-    
+    global rx, ry
     
     P.currentPlayer = len(other_player_data)
-
     i = 0
-
-    global rx, ry
 
     for key in other_player_data:
         
@@ -225,7 +209,6 @@ def updateotherplayer():
 def sync():
     global players_group,deathgroup, coinsgroup, allsprite, CameraGroup, P, opgroup
 
-    #Load id for main player 
     pre = client.recv(4096).decode()
     predatas = json.loads(pre)
 
@@ -243,10 +226,8 @@ def sync():
     P = player.Player(allsprite, players_group, ws, hs, spawn[0], spawn[1], True, id , role)
     CameraGroup.add(P)
 
-
     for i in range(1, MAX_PLAYERS):
         opgroup.append(player.Player(allsprite, players_group, ws, hs, 0, 0, False, None, None))
-
         
 
     syncing = True
@@ -266,23 +247,17 @@ def sync():
 
         i = 0
 
-        for key in other_player_data:
-
-                        
+        for key in other_player_data:     
             if len(other_player_data[key]) < 10:
                 pass 
             
             else:
-
-
                 for key2 in other_player_data[key]:
                     setattr(opgroup[i], key2, other_player_data[key][key2])
                 i+=1
-                
-
+            
                 if i == MAX_PLAYERS-1:
                     P.state = "WAIT"
-
                     syncing = False
                     game()
 
@@ -325,15 +300,21 @@ def playermanage():
         P.update_data()
 
 
-    draw_text(str(P.role), pygame.font.Font(None, 30), BLACK, screen, ws//2, hs//2-80)
+    draw_text("Role : " + str(P.role), pygame.font.Font(None, 40), WHITE, screen, 120, 50)
 
-    draw_text(str(P.coins) + " $", pygame.font.Font(None, 30), BLACK, screen, ws//2, hs//2-60)
-        
-    draw_text(str(P.vie), pygame.font.Font(None, 30), BLACK, screen, ws//2+30, hs//2-60)
-    
-    if P.role == 'mage':
-        draw_text(str(P.bullet) + " •", pygame.font.Font(None, 30), BLACK, screen, ws//2-30, hs//2-60)
-    
+    draw_text("Coins : " + str(P.coins) + " $", pygame.font.Font(None, 40), WHITE, screen, 120, 100)
+            
+    if P.role == 'Mage':
+        draw_text("Bullets : " + str(P.bullet) + " •", pygame.font.Font(None, 40), WHITE, screen, 120, 150)
+
+
+    if P.role == 'Innocent':
+        if P.cooldash == True:
+            t = "Cooldown"
+            draw_text("Dash : " + t, pygame.font.Font(None, 40), RED, screen, 120, 150)
+        if P.cooldash == False:
+            t = "Ready"
+            draw_text("Dash : " + t, pygame.font.Font(None, 40), GREEN, screen, 120, 150)      
 
 def bulletsmanage():
 
@@ -359,8 +340,7 @@ def bulletsmanage():
                     bullet.kill()
             
             if player.bullet == 0:
-                player.role = 'innocent'
-                player.base_img = innocent
+                player.role = 'Innocent'
                 player.magestat = False
 
 
@@ -372,23 +352,23 @@ def coinsmanage():
                 player.coins += 1
             
 
-        if player.role != 'assassin':
-            if player.coins >=10 and player.role == 'mage' and player.bullet < 3:
+        if player.role != 'Assassin':
+            if player.coins >=10 and player.role == 'Mage' and player.bullet < 3:
                 player.coins -= 10
                 player.bullet = 3
 
             if player.coins >=10 : 
-                player.role = 'mage'
+                player.role = 'Mage'
                 player.coins -= 10
                 player.bullet = 3
 
   
 def clock():
     global start_ticks
-    seconds=(pygame.time.get_ticks()-start_ticks)/1000 #calculate how many seconds
-    if seconds>3 and len(coinsgroup) < 50: # if more than 10 seconds close the game
+    seconds=(pygame.time.get_ticks()-start_ticks)/1000
+    if seconds>3 and len(coinsgroup) < 50: 
         CoinsC(allsprite, coinsgroup, rx, ry)
-        start_ticks=pygame.time.get_ticks() #starter tick
+        start_ticks=pygame.time.get_ticks()
         P.state = "READY"
 
     if len(coinsgroup) == 50:
@@ -398,11 +378,16 @@ def clock():
         P.state = "WAIT"
 
 
-                 
-        
+def clockdash():
+    global dashsec
+    dashsec=(pygame.time.get_ticks()-dashtick)/1000
+    if dashsec>= 4:
+        P.cooldash = False 
+       
 
 def event():
-            
+    
+    global dashtick
     for e in pygame.event.get():
 
         if e.type == QUIT:
@@ -411,27 +396,28 @@ def event():
 
         if e.type == pygame.KEYDOWN:
 
-            if e.key == pygame.K_e and P.role == "assassin":
+            if e.key == pygame.K_e and P.role == "Assassin":
                 P.assassinstat = True
-            if e.key == pygame.K_r and P.role == "assassin":
+            if e.key == pygame.K_r and P.role == "Assassin":
                 P.assassinstat = False
             
 
-            if e.key == pygame.K_e and P.role == "mage":
+            if e.key == pygame.K_e and P.role == "Mage":
                 P.magestat = True
-            if e.key == pygame.K_r and P.role == "mage":
+            if e.key == pygame.K_r and P.role == "Mage":
                 P.magestat = False
 
             
-            if e.key == pygame.K_SPACE:
+            if e.key == pygame.K_SPACE and P.role == "Innocent" and P.cooldash == False:
+                dashtick=pygame.time.get_ticks() 
                 P.dash(ws,hs)
                     
 
 
-        if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and P.role == 'mage' and P.magestat == True and P.bullet > 0:
+        if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and P.role == 'Mage' and P.magestat == True and P.bullet > 0:
             P.isshooting = True
 
-        if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and P.role == "assassin" and P.assassinstat == True:
+        if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and P.role == "Assassin" and P.assassinstat == True:
             P.isshooting = True
                         
 
@@ -449,15 +435,12 @@ def game():
 
         send_update()
         receive_message()
-
         updateotherplayer()
-
         clock()
+        clockdash()
         playermanage()
         bulletsmanage()
         coinsmanage()
-        
-
         event()
 
         pygame.display.flip()

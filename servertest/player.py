@@ -43,6 +43,7 @@ class Player(pygame.sprite.Sprite):
 
         self.etat = True
         
+        self.cooldash = False
 
         self.bulletlist = pygame.sprite.Group()
         self.bullet = 3
@@ -61,12 +62,6 @@ class Player(pygame.sprite.Sprite):
 
         self.data = {"state" : self.state, "playerid" : self.playerid, "currentPlayer": self.currentPlayer,"role": self.role, "pos": self.pos, "mpos": self.mpos, "assassinstat" : self.assassinstat, "magestat" : self.magestat, "etat" : self.etat, "isshooting": self.isshooting}
 
-
-    def choisir_role(self):
-        roles = ['innocent', "assassin", 'mage']
-        poids_roles = [10, 1, 1]
-        role = random.choices(roles, weights=poids_roles, k=1)[0]
-        return role
 
     def update(self, collisiongroup):
 
@@ -90,28 +85,22 @@ class Player(pygame.sprite.Sprite):
             if keys[pygame.K_s]:
                 self.y += self.vel
 
-
             self.velx, self.vely = self.x - self.prev_x, self.y - self.prev_y
-            #self.rect = pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
-            #self.rect = pygame.draw.rect(screen, BLACK, pygame.Rect(self.x-self.sx/2, self.y-self.sy/2, self.sx, self.sy)
-        
-
+       
             for sprite in collisiongroup:
-                if pygame.sprite.collide_rect(sprite, self):
-                    rect = sprite.rect
-                    if rect.collidepoint(self.rect.midbottom): 
-                        if self.vely > 0: 
-                            self.y -= self.vel + 1 
-                    if rect.collidepoint(self.rect.midtop): 
-                        if self.vely < 0: 
-                            self.y += self.vel + 1 
-                    if rect.collidepoint(self.rect.midright): 
-                        if self.velx > 0: 
-                            self.x -= self.vel + 1 
-                    if rect.collidepoint(self.rect.midleft):
-                        if self.velx < 0: 
-                            self.x += self.vel + 1 
-
+                rect = sprite.rect
+                if rect.collidepoint(self.rect.midbottom): 
+                    if self.vely > 0: 
+                        self.y -= self.vel
+                if rect.collidepoint(self.rect.midtop): 
+                    if self.vely < 0: 
+                        self.y += self.vel
+                if rect.collidepoint(self.rect.midright): 
+                    if self.velx > 0: 
+                        self.x -= self.vel 
+                if rect.collidepoint(self.rect.midleft):
+                    if self.velx < 0: 
+                        self.x += self.vel 
 
             if self.x < 0 or self.y < 0 or self.x > 9600 or self.y > 9600:
                 self.x, self.y = self.prev_x, self.prev_y
@@ -119,15 +108,12 @@ class Player(pygame.sprite.Sprite):
             self.vpos = pygame.Vector2(self.pos)
             self.pos = (self.x,self.y)
             self.rect  = self.image.get_rect(center = (self.x, self.y))
-
-
-            
-
+         
     def update_data(self):
         self.data = {"state" : self.state, "playerid" : self.playerid, "currentPlayer": self.currentPlayer ,"role": self.role, "pos": self.pos, "mpos": self.mpos, "assassinstat" : self.assassinstat, "magestat" : self.magestat, "etat" : self.etat, "isshooting": self.isshooting}
                    
     def isshoot(self, playergroup, allsprite, ws , hs):
-        if self.isshooting == True and self.role == 'assassin' and self.assassinstat == True:
+        if self.isshooting == True and self.role == 'Assassin' and self.assassinstat == True:
             otherplayer = playergroup.copy()
             otherplayer.remove(self)
             
@@ -137,7 +123,7 @@ class Player(pygame.sprite.Sprite):
             self.isshooting = False
             
         
-        if self.isshooting == True and self.role == 'mage' and self.magestat == True:
+        if self.isshooting == True and self.role == 'Mage' and self.magestat == True:
             bullet.Bullet(self, allsprite, self.bulletlist, ws ,hs)
             self.bullet -= 1
 
@@ -156,29 +142,23 @@ class Player(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
     
     def dash(self, ws ,hs):
-
-        global start_ticks, seconds
-
-        if seconds>= 4 : # if more than 10 seconds close the game
-            start_ticks=pygame.time.get_ticks() #starter tick
-            seconds=(pygame.time.get_ticks()-start_ticks)/1000 #calculate how many seconds
-
        
-            self.destx, self.desty = self.mpos
-            vect = (self.destx - ws//2, self.desty - hs//2)
-            angle = math.atan2(vect[1], vect[0])
-            self.change_x = math.cos(angle) * 500
-            self.change_y = math.sin(angle) * 500
+        self.destx, self.desty = self.mpos
+        vect = (self.destx - ws//2, self.desty - hs//2)
+        angle = math.atan2(vect[1], vect[0])
+        self.change_x = math.cos(angle) * 500
+        self.change_y = math.sin(angle) * 500
 
-            self.x += self.change_x
-            self.y += self.change_y
+        self.x += self.change_x
+        self.y += self.change_y
 
-            self.vpos = pygame.Vector2(self.pos)
-            self.pos = (self.x,self.y)
-            self.rect  = self.image.get_rect(center = (self.x, self.y))
+        self.vpos = pygame.Vector2(self.pos)
+        self.pos = (self.x,self.y)
+        self.rect  = self.image.get_rect(center = (self.x, self.y))
 
-        else:
-            seconds=(pygame.time.get_ticks()-start_ticks)/1000 #calculate how many seconds
+        self.cooldash = True
+
+
 
 
 
@@ -186,7 +166,7 @@ class Player(pygame.sprite.Sprite):
 
     def roles(self, allspritegroup, ws ,hs): 
 
-        if self.role == 'assassin':
+        if self.role == 'Assassin':
             if self.assassinstat == True:
                 self.base_img = assassin
                 allspritegroup.add(self.sector)
@@ -197,14 +177,14 @@ class Player(pygame.sprite.Sprite):
                 self.base_img = innocent
                 
 
-        if self.role == 'innocent':
+        if self.role == 'Innocent':
             allspritegroup.remove(self.sector)
             self.base_img = innocent
             self.magestat == False
             self.assassinstat == False
 
 
-        if self.role == 'mage':
+        if self.role == 'Mage':
             allspritegroup.remove(self.sector)
             if self.magestat == True:
                 self.base_img = mage
