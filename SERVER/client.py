@@ -47,8 +47,6 @@ HOST = '192.168.1.16'
 PORT = 5050
 
 
-#---------------------------INIT SERVER--------------------------
-
 def initserv():
     global client
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
