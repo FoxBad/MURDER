@@ -1,7 +1,5 @@
 import pygame, sector, math, redcross, os, bullet
 
-seconds = 4
-
 innocent = pygame.image.load(os.path.join("assets", "innocent.png"))
 innocent  = pygame.transform.rotate(innocent, 90)
 
@@ -12,7 +10,7 @@ assassin = pygame.image.load(os.path.join("assets", "assassin.png"))
 assassin  = pygame.transform.rotate(assassin, 90)
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, allspritegroup, groups, ws ,hs, x, y, main, playerid, role):
+    def __init__(self, allspritegroup, groups, x, y, main, playerid, role, wins):
         super().__init__(allspritegroup)
         groups.add(self)
 
@@ -27,6 +25,7 @@ class Player(pygame.sprite.Sprite):
         self.pos = (self.x,self.y)
 
         self.mpos = (0, 0)
+        self.wins = wins
 
         self.sx = 100
         self.sy = 100 
@@ -55,12 +54,11 @@ class Player(pygame.sprite.Sprite):
 
         self.coins = 0
 
-        self.vectsize = pygame.Vector2((ws//2, hs//2))
         self.vpos = pygame.Vector2(self.pos)
         self.sector = sector.Sector(self.vpos, allspritegroup, self)
 
 
-        self.data = {"state" : self.state, "playerid" : self.playerid, "currentPlayer": self.currentPlayer,"role": self.role, "pos": self.pos, "mpos": self.mpos, "assassinstat" : self.assassinstat, "magestat" : self.magestat, "etat" : self.etat, "isshooting": self.isshooting}
+        self.data = {"state" : self.state, "playerid" : self.playerid, "currentPlayer": self.currentPlayer,"role": self.role, "pos": self.pos, "mpos": self.mpos, "assassinstat" : self.assassinstat, "magestat" : self.magestat, "etat" : self.etat, "isshooting": self.isshooting, "wins" : self.wins}
 
 
     def update(self, collisiongroup):
@@ -110,9 +108,9 @@ class Player(pygame.sprite.Sprite):
             self.rect  = self.image.get_rect(center = (self.x, self.y))
          
     def update_data(self):
-        self.data = {"state" : self.state, "playerid" : self.playerid, "currentPlayer": self.currentPlayer ,"role": self.role, "pos": self.pos, "mpos": self.mpos, "assassinstat" : self.assassinstat, "magestat" : self.magestat, "etat" : self.etat, "isshooting": self.isshooting}
+        self.data = {"state" : self.state, "playerid" : self.playerid, "currentPlayer": self.currentPlayer ,"role": self.role, "pos": self.pos, "mpos": self.mpos, "assassinstat" : self.assassinstat, "magestat" : self.magestat, "etat" : self.etat, "isshooting": self.isshooting, "wins" : self.wins}
                    
-    def isshoot(self, playergroup, allsprite, ws , hs):
+    def isshoot(self, playergroup, allsprite):
         if self.isshooting == True and self.role == 'Assassin' and self.assassinstat == True:
             otherplayer = playergroup.copy()
             otherplayer.remove(self)
@@ -124,27 +122,27 @@ class Player(pygame.sprite.Sprite):
             
         
         if self.isshooting == True and self.role == 'Mage' and self.magestat == True:
-            bullet.Bullet(self, allsprite, self.bulletlist, ws ,hs)
+            bullet.Bullet(self, allsprite, self.bulletlist, self.wins[0] ,self.wins[1])
             self.bullet -= 1
 
             self.isshooting = False
 
-    def orientation(self, ws ,hs):
-        
+    def orientation(self):
+
         if self.main == True:
             self.mpos = pygame.mouse.get_pos()
 
-        self.x_dist = self.mpos[0] - ws//2
-        self.y_dist = -(self.mpos[1] - hs//2)
+        self.x_dist = self.mpos[0] - self.wins[0]//2
+        self.y_dist = -(self.mpos[1] - self.wins[1]//2)
         self.angle = math.degrees(math.atan2(self.y_dist, self.x_dist))
         self.image  = pygame.transform.rotate(self.image, self.angle)
         self.rect  = self.image.get_rect(center = (self.x, self.y))
         self.mask = pygame.mask.from_surface(self.image)
     
-    def dash(self, ws ,hs):
+    def dash(self):
        
         self.destx, self.desty = self.mpos
-        vect = (self.destx - ws//2, self.desty - hs//2)
+        vect = (self.destx - self.wins[0]//2, self.desty - self.wins[1]//2)
         angle = math.atan2(vect[1], vect[0])
         self.change_x = math.cos(angle) * 1000
         self.change_y = math.sin(angle) * 1000
@@ -159,14 +157,13 @@ class Player(pygame.sprite.Sprite):
         self.cooldash = True
 
 
-    def roles(self, allspritegroup, ws ,hs): 
+    def roles(self, allspritegroup): 
 
         if self.role == 'Assassin':
             if self.assassinstat == True:
                 self.base_img = assassin
                 allspritegroup.add(self.sector)
-                self.managesector(ws ,hs)
-
+                self.managesector()
             else: 
                 allspritegroup.remove(self.sector)
                 self.base_img = innocent
@@ -187,10 +184,11 @@ class Player(pygame.sprite.Sprite):
 
 
 
-    def managesector(self, ws ,hs):
-        self.vectsize = pygame.Vector2((ws//2, hs//2))
+    def managesector(self):
+        self.vectsize = pygame.Vector2((self.wins[0]//2, self.wins[1]//2))
         self.vpos = pygame.Vector2(self.pos)
         self.sector.update(self.vpos, self.vectsize, self.mpos)
+        
 
     def perdre_vie(self):
         self.vie -= 1

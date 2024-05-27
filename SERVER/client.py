@@ -1,5 +1,6 @@
 #-------------------------------IMPORT-----------------------------
 
+from win32api import GetSystemMetrics
 import sys, os
 import pygame
 from pygame.locals import *
@@ -17,8 +18,6 @@ fps = 120
 fpsClock = pygame.time.Clock()
 
 info = pygame.display.Info()
-w = 600
-h = 800
 
 global MAX_PLAYERS
 MAX_PLAYERS = 2
@@ -27,7 +26,13 @@ pygame.display.set_caption("APEO - BETA")
 icon = pygame.image.load(os.path.join("assets", "logo2.png"))
 pygame.display.set_icon(icon)
 
-screen = pygame.display.set_mode((w, h), RESIZABLE)
+def screensize():
+    global w, h
+    w, h = GetSystemMetrics(0), GetSystemMetrics(1)
+
+screensize()
+
+screen = pygame.display.set_mode((500, 500), RESIZABLE)
 
 def winsize():
     global ws, hs
@@ -38,7 +43,7 @@ winsize()
 #---------------------------INIT SERVER--------------------------
 
 
-HOST = '172.20.10.3'
+HOST = '192.168.1.16'
 PORT = 5050
 
 
@@ -114,6 +119,7 @@ def main_menu():
 
         winsize()
 
+
         button_x = ws // 2
         button_y = hs // 2
 
@@ -181,7 +187,11 @@ def receive_message():
 def updateotherplayer():
     global rx, ry
     
+    winsize()
+
     P.currentPlayer = len(other_player_data)
+    P.wins = (ws, hs)
+
     i = 0
 
     for key in other_player_data:
@@ -197,9 +207,10 @@ def updateotherplayer():
                 setattr(opgroup[i], key2, other_player_data[key][key2])
 
             i+=1
-
-
+        
     
+
+   
     
 #-------------------------------SYNC------------------------------
         
@@ -221,11 +232,11 @@ def sync():
     CameraGroup = camera.Camera()
     opgroup = []
 
-    P = player.Player(allsprite, players_group, ws, hs, spawn[0], spawn[1], True, id , role)
+    P = player.Player(allsprite, players_group, spawn[0], spawn[1], True, id , role, (ws, hs))
     CameraGroup.add(P)
 
     for i in range(1, MAX_PLAYERS):
-        opgroup.append(player.Player(allsprite, players_group, ws, hs, 0, 0, False, None, None))
+        opgroup.append(player.Player(allsprite, players_group, 0, 0, False, None, None, None))
         
 
     syncing = True
@@ -242,11 +253,12 @@ def sync():
         receive_message()
 
         P.currentPlayer = len(other_player_data)
+        P.wins = (ws, hs)
 
         i = 0
         for key in other_player_data:
 
-            if len(other_player_data[key]) < 10:
+            if len(other_player_data[key]) < 11:
                 pass 
 
             else:
@@ -299,6 +311,15 @@ def clockdash():
 
 #-------------------------------JEU------------------------------
 
+def draw():
+    global pos, quitcross
+
+    pos = pygame.mouse.get_pos()
+
+    button_x = ws - 40
+    button_y = 40
+
+    quitcross = button.Button(button_x, button_y, "cross.png", (50,50), screen)
 
 def playermanage():
     
@@ -308,13 +329,13 @@ def playermanage():
 
         p.update(layer2_group)
                 
-        p.roles(allsprite, ws ,hs)
+        p.roles(allsprite)
 
-        p.orientation(ws , hs )
+        p.orientation()
 
         p.checkalive(deathgroup, allsprite)
 
-        p.isshoot(players_group, allsprite, ws, hs)
+        p.isshoot(players_group, allsprite)
 
         P.update_data()
 
@@ -409,16 +430,18 @@ def event():
             
             if e.key == pygame.K_SPACE and P.role == "Innocent" and P.cooldash == False:
                 dashtick=pygame.time.get_ticks() 
-                P.dash(ws,hs)
+                P.dash()
                     
-
+        if e.type == pygame.MOUSEBUTTONDOWN:
+            if quitcross.rect.collidepoint(pos):
+                tryquit()
 
         if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and P.role == 'Mage' and P.magestat == True and P.bullet > 0:
             P.isshooting = True
 
         if e.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] and P.role == "Assassin" and P.assassinstat == True:
             P.isshooting = True
-                        
+ 
 
 #-----------------------------MAIN GAME LOOP-----------------------------
 
@@ -430,6 +453,8 @@ def game():
         screen.fill(BLACK)
         winsize()
 
+
+
         P.update_data()
 
         send_update()
@@ -440,6 +465,7 @@ def game():
         playermanage()
         bulletsmanage()
         coinsmanage()
+        draw()
         event()
 
         pygame.display.flip()

@@ -12,7 +12,7 @@ for i in range(0,500):
     coins.append((random.randint(0, 9600), random.randint(0, 9600)))
 
 # Configuration du serveur
-HOST = '172.20.10.3'
+HOST = '192.168.1.16'
 PORT = 5050
 currentPlayer = 0
 MAX_PLAYERS = 2
