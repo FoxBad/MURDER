@@ -146,8 +146,8 @@ class Player(pygame.sprite.Sprite):
         self.destx, self.desty = self.mpos
         vect = (self.destx - ws//2, self.desty - hs//2)
         angle = math.atan2(vect[1], vect[0])
-        self.change_x = math.cos(angle) * 500
-        self.change_y = math.sin(angle) * 500
+        self.change_x = math.cos(angle) * 1000
+        self.change_y = math.sin(angle) * 1000
 
         self.x += self.change_x
         self.y += self.change_y

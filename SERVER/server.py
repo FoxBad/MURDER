@@ -8,7 +8,7 @@ spawns = [(8000, 3200), (6500, 6700), (1600, 1000)]
 
 
 coins = []
-for i in range(0,200):
+for i in range(0,500):
     coins.append((random.randint(0, 9600), random.randint(0, 9600)))
 
 # Configuration du serveur
