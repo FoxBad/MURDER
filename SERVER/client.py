@@ -281,13 +281,13 @@ def sync():
 def clock():
     global start_ticks
     seconds=(pygame.time.get_ticks()-start_ticks)/1000
-    if seconds>1 and len(coinsgroup) < 50: 
+    if seconds>3 and len(coinsgroup) < 50: 
         CoinsC(allsprite, coinsgroup, rx, ry)
         start_ticks=pygame.time.get_ticks()
         P.state = "READY"
     if len(coinsgroup) == 50:
         P.state = "WAIT"
-    if seconds < 1:
+    if seconds < 3:
         P.state = "WAIT"
 
 
