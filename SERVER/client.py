@@ -287,7 +287,7 @@ def clock():
         P.state = "READY"
     if len(coinsgroup) == 50:
         P.state = "WAIT"
-    if seconds < 3:
+    if seconds < 1:
         P.state = "WAIT"
 
 
