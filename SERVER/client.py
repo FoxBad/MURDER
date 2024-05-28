@@ -1,6 +1,5 @@
 #-------------------------------IMPORT-----------------------------
 
-from win32api import GetSystemMetrics
 import sys, os
 import pygame
 from pygame.locals import *
@@ -20,17 +19,12 @@ fpsClock = pygame.time.Clock()
 info = pygame.display.Info()
 
 global MAX_PLAYERS
-MAX_PLAYERS = 2
+MAX_PLAYERS = 3
 
 pygame.display.set_caption("APEO - BETA")
 icon = pygame.image.load(os.path.join("assets", "logo2.png"))
 pygame.display.set_icon(icon)
 
-def screensize():
-    global w, h
-    w, h = GetSystemMetrics(0), GetSystemMetrics(1)
-
-screensize()
 
 screen = pygame.display.set_mode((500, 500), RESIZABLE)
 
@@ -43,7 +37,7 @@ winsize()
 #---------------------------INIT SERVER--------------------------
 
 
-HOST = '192.168.1.16'
+HOST = '192.0.0.2'
 PORT = 5050
 
 

@@ -12,10 +12,10 @@ for i in range(0,500):
     coins.append((random.randint(0, 9600), random.randint(0, 9600)))
 
 # Configuration du serveur
-HOST = '192.168.1.16'
+HOST = '192.0.0.2'
 PORT = 5050
 currentPlayer = 0
-MAX_PLAYERS = 2
+MAX_PLAYERS = 3
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((HOST, PORT))
 server.listen(MAX_PLAYERS) # Limite de 2 clients
