@@ -143,7 +143,7 @@ def main_menu():
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_f:
                     if screen.get_flags() & FULLSCREEN:
-                        pygame.display.set_mode((w, h))
+                        pygame.display.set_mode((500, 500))
                     else:
                         pygame.display.set_mode((1920, 1080), FULLSCREEN)
 
@@ -271,7 +271,7 @@ def sync():
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_f:
                     if screen.get_flags() & FULLSCREEN:
-                        pygame.display.set_mode((w, h))
+                        pygame.display.set_mode((500, 500))
                     else:
                         pygame.display.set_mode((1920, 1080), FULLSCREEN)
         
